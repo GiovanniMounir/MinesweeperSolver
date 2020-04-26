@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace MinesweeperSolver
@@ -14,33 +16,32 @@ namespace MinesweeperSolver
         }
         private Rectangle ScreenBounds()
         {
-            return Screen.GetBounds(Point.Empty);
+            return Screen.GetBounds(System.Drawing.Point.Empty);
         }
         private Bitmap CaptureScreen()
         {
             Rectangle bounds = ScreenBounds();
-            using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
+            Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height);
+            using (Graphics g = Graphics.FromImage(bitmap))
             {
-                using (Graphics g = Graphics.FromImage(bitmap))
-                {
-                    g.CopyFromScreen(Point.Empty, Point.Empty, bounds.Size);
-                }
-                return bitmap;
+                g.CopyFromScreen(System.Drawing.Point.Empty, System.Drawing.Point.Empty, bounds.Size);
             }
-
+            return bitmap;
         }
         private void Form1_Load(object sender, EventArgs e)
         {
             Rectangle bounds = ScreenBounds();
-            this.Location = new Point(0, 0);
+            this.Location = new System.Drawing.Point(0, 0);
             this.Size = new Size(bounds.Width, bounds.Height);
         }
-
-        private void timer1_Tick(object sender, EventArgs e)
+        private void Form1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
-            using (Bitmap screen = CaptureScreen())
+            if (e.Control && e.KeyCode == Keys.T)
             {
-                //dosmth with screen
+                //Bitmap _bitmap = CaptureScreen();
+                //do something with _bitmap
+                // _bitmap.save(@"C:\Users\user\Desktop\output.png"); //save resulting image to desktop
+                MessageBox.Show("OK");
             }
         }
     }
