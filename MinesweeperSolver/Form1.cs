@@ -185,7 +185,7 @@ namespace MinesweeperSolver
         private void DoLogic(Bitmap _bitmap)
         {
             if (_bitmap == null) return;
-            _bitmap = new Bitmap(@"C:\Users\PC\Documents\GitHub\MinesweeperSolver\MinesweeperSolver\s5.png");
+            //_bitmap = new Bitmap(@"C:\Users\PC\Documents\GitHub\MinesweeperSolver\MinesweeperSolver\s5.png");
             using (Image<Bgr, Byte> original = new Image<Bgr, byte>(_bitmap))
             {
 
