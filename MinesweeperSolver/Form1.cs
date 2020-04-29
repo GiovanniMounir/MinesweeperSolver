@@ -2,6 +2,7 @@
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -94,7 +95,6 @@ namespace MinesweeperSolver
             if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
                 start = false;
-                DoLogic(regionRectangle);
                 oq.Hide();
                 oq.Dispose();
                 this.Opacity = 1;
@@ -102,6 +102,7 @@ namespace MinesweeperSolver
                 button1.Visible = true;
                 button2.Visible = true;
                 System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default;
+                DoLogic(regionRectangle);
             }
         }
 
@@ -182,88 +183,168 @@ namespace MinesweeperSolver
                     return number.ToString()[0];
             }
         }
+        bool HasParent(Rectangle rect, List<Rectangle> rectangles)
+        {
+            foreach (Rectangle rectangle in rectangles)
+            {
+                if ((rect.X >= rectangle.X && rect.X <= rectangle.X + rectangle.Width) && (rect.Y >= rectangle.Y && rect.Y <= rectangle.Y + rectangle.Height))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private void SaveOpenImage(Image<Bgr, float> image, string filename)
+        {
+            image.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
+            Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
+        }
+        private void SaveOpenImage(Image<Bgr,Byte> image, string filename)
+        {
+            image.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\"+filename);
+            Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\"+filename);
+        }
+        private Image<Bgr, byte> ToWhite(Image<Bgr, byte> rgbimage, Bgr sourceColor)
+        {
+            Image<Bgr, byte> ret = rgbimage.Clone();
+            var image = rgbimage.InRange(sourceColor, sourceColor);
+            var mat = rgbimage.Mat;
+            mat.SetTo(new MCvScalar(255,255,255), image);
+            mat.CopyTo(ret);
+            return ret;
+        }
+        private Image<Bgr, byte> ToBlack(Image<Bgr, byte> rgbimage, Bgr sourceColor)
+        {
+            Image<Bgr, byte> ret = rgbimage.Clone();
+            var image = rgbimage.InRange(sourceColor, sourceColor);
+            var mat = rgbimage.Mat;
+            mat.SetTo(new MCvScalar(0, 0, 0), image);
+            mat.CopyTo(ret);
+            return ret;
+        }
+        private Image<Bgr, byte> ToBlack(Image<Bgr, byte> rgbimage, Bgr sourceColor, Bgr targetColor)
+        {
+            Image<Bgr, byte> ret = rgbimage.Clone();
+            var image = rgbimage.InRange(sourceColor,targetColor);
+            var mat = rgbimage.Mat;
+            mat.SetTo(new MCvScalar(0,0,0), image);
+            mat.CopyTo(ret);
+            return ret;
+        }
         private void DoLogic(Bitmap _bitmap)
         {
             if (_bitmap == null) return;
-            //_bitmap = new Bitmap(@"C:\Users\PC\Documents\GitHub\MinesweeperSolver\MinesweeperSolver\s5.png");
+            //_bitmap = new Bitmap(@"C:\Users\PC\Downloads\mines\Untitled.png");
             using (Image<Bgr, Byte> original = new Image<Bgr, byte>(_bitmap))
             {
 
-                using (Image<Bgr, Byte> img = new Image<Bgr, byte>(_bitmap))
+                using (Image<Bgr, Byte> img = ToBlack(ToBlack(ToBlack(original, new Bgr(200, 200, 200), new Bgr(255, 255, 255)), new Bgr(128, 128, 128)), new Bgr(129, 129, 129), new Bgr(180, 180, 180)))
                 {
                     // (1) Convert to gray, and threshold
                     //Emgu.CV.CvInvoke.CvtColor(img, img, Emgu.CV.CvEnum.ColorConversion.Bgr2Gray);
                     //Emgu.CV.CvInvoke.AdaptiveThreshold(img, img, 255, Emgu.CV.CvEnum.AdaptiveThresholdType.GaussianC, Emgu.CV.CvEnum.ThresholdType.BinaryInv, (int)numericUpDown1.Value, (int)numericUpDown2.Value);
-
+                    //CvInvoke.GaussianBlur(img, img, new Size(5, 5), 0);
                     CvInvoke.CvtColor(img, img, Emgu.CV.CvEnum.ColorConversion.Bgr2Gray);
-                    CvInvoke.Canny(img, img, 90, 150, 3);
+                     int n = 2;
 
-                    //img.Save(@"C:\Users\PC\Desktop\canny1.png"); //save resulting image to desktop
-                    Mat kernel = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(3, 3), new Point(-1, -1));
-                    CvInvoke.Dilate(img, img, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
+                     Mat kernel = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(n, n), new Point(-1, -1));
+                     CvInvoke.Erode(img, img, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
+                     kernel = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(n, n), new Point(-1, -1));
+                     CvInvoke.Dilate(img, img, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
+                     
+                    //Image<Bgr, float> sobel = img.Sobel(0, 1, 3).Add(img.Sobel(1, 0, 3)).AbsDiff(new Bgr(0,0,0));
 
-                    kernel = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(5, 5), new Point(-1, -1));
-                    CvInvoke.Erode(img, img, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
+                    SaveOpenImage(img, "imgor.png");
+                    return;
+                    CvInvoke.Canny(img, img, 50, 150);
 
-                    int n = 2;
-                    Mat vrtlin = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(1, n), new Point(-1, -1));
-                    Mat hrzlin = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(n, 1), new Point(-1, -1));
-
-                    CvInvoke.MorphologyEx(img, img, Emgu.CV.CvEnum.MorphOp.Close, vrtlin, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
-                    CvInvoke.MorphologyEx(img, img, Emgu.CV.CvEnum.MorphOp.Close, hrzlin, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
-
-                    CvInvoke.Canny(img, img, 50, 150, 3);
-
-                    //img.Save(@"C:\Users\PC\Desktop\morph.png"); //save resulting image to desktop
-                    var lines = CvInvoke.HoughLinesP(img, 1, PI / 180, 80, 5, 20);//ilines=np.array([]), minLineLength=minLineLength,maxLineGap=80 (changed to 20, rbo to 80)
-
-                    int minx = int.MaxValue, miny = int.MaxValue, maxx = int.MinValue, maxy = int.MinValue;
-                    List<int> Tx = new List<int>();
-                    foreach (var line in lines)
+                    List<Rectangle> rectangles = new List<Rectangle>();
+                    Mat hierarchy = new Mat();
+                    VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+                    CvInvoke.FindContours(img, contours, hierarchy, Emgu.CV.CvEnum.RetrType.Ccomp, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxNone);
+                    Dictionary<string, int> _rect = new Dictionary<string, int>();
+                    for (int i = 0; i < contours.Size; i++)
                     {
-                        Tx.Add(line.P1.X);
-                        if (line.P1.X > maxx) maxx = line.P1.X;
-                        if (line.P2.X > maxx) maxx = line.P2.X;
-
-                        if (line.P1.X < minx) minx = line.P1.X;
-                        if (line.P2.X < minx) minx = line.P2.X;
-
-                        if (line.P1.Y > maxy) maxy = line.P1.Y;
-                        if (line.P2.Y > maxy) maxy = line.P2.Y;
-
-                        if (line.P1.Y < miny) miny = line.P1.Y;
-                        if (line.P2.Y < miny) miny = line.P2.Y;
-
-                        CvInvoke.Line(original, line.P1, line.P2, new MCvScalar(255, 0, 0), 2);
+                        Rectangle rect = CvInvoke.BoundingRectangle(contours[i]);
+                        original.Draw(rect, new Bgr(Color.Blue), 1);
+                        if (rect.Width > 5 && rect.Width < 20 && rect.Height < 20)
+                            rectangles.Add(rect);
                     }
-
-                    using (Image<Bgr, Byte> visualizer = original.Clone())
+                    List<Rectangle> drawnRectangles = new List<Rectangle>();
+                    rectangles = rectangles.OrderByDescending(x => x.Height).OrderByDescending(x => x.Width).ToList();
+                    foreach (Rectangle rect in rectangles)
                     {
-                        var _array = np.array(Tx.ToArray());
-                        int step = int.Parse(np.max(np.ediff1d(np.unique(np.sort(_array)).data)).ToString());
-
-                        int x = minx;
-                        int y = miny;
-                        int counter = 0;
-                        if (step > 0)
                         {
-                            int[,] Matrix = new int[((maxx - minx) / step), ((maxy - miny) / step)];
-                            int number;
-                            int _y;
-                            int _x = 0;
-                            while (x + step < maxx)
+                            if (!HasParent(rect, drawnRectangles))
                             {
-                                _y = 0;
-                                while (y + step < maxy)
+                                original.Draw(rect, new Bgr(Color.Red), 1);
+
+                                drawnRectangles.Add(rect);
+                                if (!_rect.ContainsKey("y_" + rect.Y))
                                 {
-                                    Bitmap __bitmap = original.ToBitmap().Clone(new Rectangle(x, y, step, step), original.ToBitmap().PixelFormat);
+                                    _rect.Add("y_" + rect.Y, 0);
+                                }
+                                if (!_rect.ContainsKey("x_" + rect.X))
+                                {
+                                    _rect.Add("x_" + rect.X, 0);
+                                }
+                                _rect["x_" + rect.X]++;
+                                _rect["y_" + rect.Y]++;
+
+                            }
+                        }
+                    }
+                    /*
+                    int rectwidth = 0;
+                    int rectheight = 0;
+                    for (int i = 0; i < rectangles.Count; i++)
+                    {
+                        rectwidth += rectangles[i].Width;
+                        rectheight += rectangles[i].Height;
+                    }
+                    if (rectangles.Count > 0)
+                    {
+                        rectwidth /= rectangles.Count;
+                        rectheight /= rectangles.Count;
+                        int maxCount_x = 0;
+                        int maxCount_y = 0;
+                        string maxkeyIndex_x = "";
+                        string maxkeyIndex_y = "";
+                        foreach (string key in _rect.Keys)
+                        {
+                            if (key.StartsWith("x_") && _rect[key] > maxCount_x)
+                            {
+                                maxCount_x = _rect[key];
+                                maxkeyIndex_x = key;
+                            }
+                            else if (key.StartsWith("y_") && _rect[key] > maxCount_y)
+                            {
+                                maxCount_y = _rect[key];
+                                maxkeyIndex_y = key;
+                            }
+                        }
+                        if (maxCount_x * maxCount_y != rectangles.Count)
+                        {
+                            MessageBox.Show("The cells were not properly detected. Please adjust the snipping rectangle.");
+                            //return;
+                        }
+                        rectangles = rectangles.OrderBy(x => x.X).OrderBy(x => x.Y).ToList();
+                        int[,] Matrix = new int[maxCount_x, maxCount_y];
+                        int number;
+                        int _i = 0;
+                        for (int x = 0; x < maxCount_x; x++)
+                        {
+                            for (int y = 0; y < maxCount_y; y++)
+                            {
+                                if (_i < rectangles.Count)
+                                {
+                                    Bitmap __bitmap = original.ToBitmap().Clone(new Rectangle(rectangles[_i].X - 3, rectangles[_i].Y, rectwidth + 3, rectheight), original.ToBitmap().PixelFormat);
                                     number = 0; //BLANK
                                     foreach (Color _color in numberMap.Keys)
                                     {
                                         if (ImageColor(__bitmap, _color, 8))
                                         {
                                             number = numberMap[_color];
-                                            Debug.WriteLine(number);
                                             break;
                                         }
                                     }
@@ -275,24 +356,18 @@ namespace MinesweeperSolver
                                     {
                                         number = -2; //UNOPENED
                                     }
-                                    visualizer.Draw(new Rectangle(x, y, step, step), new Bgr(0, 0, 255), 1);
-                                    visualizer.Draw(GetChar(number).ToString(), new Point(x, y), Emgu.CV.CvEnum.FontFace.HersheyPlain, 0.5, new Bgr(0, 0, 255));
-                                    Matrix[_x, _y] = number;
-                                    counter++;
-                                    y += step;
-                                    _y++;
+                                    visualizer.Draw(new Rectangle(rectangles[_i].X - 3, rectangles[_i].Y, rectwidth + 3, rectheight), new Bgr(0, 0, 255), 1);
+                                    visualizer.Draw(GetChar(number).ToString(), new Point(rectangles[_i].X + 1, rectangles[_i].Y + 5), Emgu.CV.CvEnum.FontFace.HersheyPlain, 0.5, new Bgr(255, 255, 255));
+                                    Matrix[x, y] = number;
+                                    _i++;
                                 }
-                                y = miny;
-                                x += step;
-                                _x++;
                             }
                         }
-
-
-
-                        visualizer.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\output.png");
-                        Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\output.png");
+                        visualizer.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\visualizer.png");
+                        Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\visualizer.png");
                     }
+                }
+                    */
                 }
             }
         }
@@ -309,16 +384,25 @@ namespace MinesweeperSolver
         {
             Color temp;
             int count = 0;
+            for (int i =0; i < image.Width; i++)
+            {
+                for (int j = 0; j< image.Height; j++)
+                {
+                    temp = image.GetPixel(i, j);
+                    if ((Math.Abs(temp.R - _color.R) < thres) && (Math.Abs(temp.G - _color.G) < thres) && (Math.Abs(temp.B - _color.B) < thres)) count++;
+                }
+            }
+            if (count >= mincount) return true;
+            return false;/*
             for (int i = 0; i < image.Height * image.Width; ++i)
             {
                 int row = i / image.Height;
                 int col = i % image.Width;
                 if (row % 2 != 0) col = image.Width - col - 1;
-                temp = image.GetPixel(col, row);
-                if ((Math.Abs(temp.R - _color.R) < thres) && (Math.Abs(temp.G - _color.G) < thres) && (Math.Abs(temp.B - _color.B) < thres)) count++;
+                
                 if (count >= mincount) return true;
             }
-            return false;
+            return false;*/
 
         }
         private void Button1_Click(object sender, EventArgs e)
@@ -327,7 +411,7 @@ namespace MinesweeperSolver
         }
         private void Button2_Click(object sender, EventArgs e)
         {
-            if (regionRectangle != null)
+            if (regionRectangle != null && regionRectangle.Width > 0 &regionRectangle.Height >0)
                 DoLogic(regionRectangle);
         }
     }
