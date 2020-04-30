@@ -5,7 +5,7 @@ using System.Linq;
 /*
  *  matrix solver 
  * 
- * I devided the work into three main classes below Main(Panel, GameBoard and GameSolver Class)
+ * I divided the work into three main classes below Main(Panel, GameBoard and GameSolver Class)
  * 
  * */
 
