@@ -20,16 +20,16 @@ namespace ConsoleApp1
 
             int[,] input = new int[,]
             {
-                    {-2, -2, -2, -2, -2, -2, -2, -2, -2},
-                    { 1,  1, -2, -2, -2, -2, -2, -2, -2},
-                    { 0,  1, -2, -2,  1,  1,  2,  2, -2},
-                    { 0,  1, -2, -2,  1,  0,  1,  1, -2},
-                    { 0,  2,  4, -2,  2,  0,  1, -1,  1},
-                    { 0,  1, -1, -1,  2,  0,  1,  1,  1},
-                    { 0,  1,  3, -1,  2,  0,  0,  0,  0},
-                    { 0,  0,  1,  1,  1,  0,  1,  1,  1},
-                    { 0,  0,  0,  0,  0,  0,  1, -1, -2}
-                };
+                {-2, -2, -2, -2, -2, -2, -2, -2, -2},
+                { 1,  1, -2, -2, -2, -2, -2, -2, -2},
+                { 0,  1, -2, -2,  1,  1,  2,  2, -2},
+                { 0,  1, -2, -2,  1,  0,  1,  1, -2},
+                { 0,  2,  4, -2,  2,  0,  1, -1,  1},
+                { 0,  1, -1, -1,  2,  0,  1,  1,  1},
+                { 0,  1,  3, -1,  2,  0,  0,  0,  0},
+                { 0,  0,  1,  1,  1,  0,  1,  1,  1},
+                { 0,  0,  0,  0,  0,  0,  1, -1, -2}
+            };
 
             
             
@@ -45,17 +45,22 @@ namespace ConsoleApp1
 
 
             //outputting result to console
-            Console.WriteLine("panels that will be flagged:");
-            foreach(var flag in flags)
-            {
-                Console.WriteLine("(" + flag.X +", "+ flag.Y + ")");
+            if (flags.Any())
+            { 
+                Console.WriteLine("panels that will be flagged:");
+                foreach(var flag in flags)
+                {
+                    Console.WriteLine("(" + flag.X +", "+ flag.Y + ")");
+                }
             }
-            Console.WriteLine("panels that will be revealed:");
-            foreach(var reveal in will_reveal)
+            if (will_reveal.Any())
             {
-                Console.WriteLine("(" + reveal.X + ", " + reveal.Y + ")");
+                Console.WriteLine("panels that will be revealed:");
+                foreach (var reveal in will_reveal)
+                {
+                    Console.WriteLine("(" + reveal.X + ", " + reveal.Y + ")");
+                }
             }
-
 
         }
 
