@@ -25,7 +25,7 @@ panels that will be revealed:
 
 
 
- # Test :
+ # Test 2:
 ![Image description](test2.png)
 
 ```

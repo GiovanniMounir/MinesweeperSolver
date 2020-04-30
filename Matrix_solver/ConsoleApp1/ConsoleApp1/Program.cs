@@ -2,6 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
+/*
+ *  matrix solver 
+ * 
+ * I devided the work into three main classes below Main(Panel, GameBoard and GameSolver Class)
+ * 
+ * */
 
 namespace ConsoleApp1
 {
@@ -54,10 +60,9 @@ namespace ConsoleApp1
         }
 
 
-        //panel class
+        //class represents a single square in the board i call them panels
         public class Panel
         {
-            public int ID { get; set; }
             public int X { get; set; }
             public int Y { get; set; }
     
@@ -65,9 +70,8 @@ namespace ConsoleApp1
             public bool IsRevealed { get; set; }
             public bool IsFlagged { get; set; }
 
-            public Panel(int id, int x, int y)
+            public Panel(int x, int y)
             {
-                ID = id;
                 X = x;
                 Y = y;
                 IsRevealed = false;
@@ -77,12 +81,11 @@ namespace ConsoleApp1
         }
 
 
-        //game board class
+        //class represents the whole game board
         public class GameBoard
         {
             public int Width { get; set; }
             public int Height { get; set; }
-            public int MineCount { get; set; }
             public List<Panel> Panels { get; set; }
 
 
@@ -92,12 +95,12 @@ namespace ConsoleApp1
                 Height = height;
                 Panels = new List<Panel>();
 
-                int id = 1;
+                //fill the game panels with the input array
                 for (int i = 0; i < height; i++) 
                 {
                     for (int j = 0; j < width; j++)
                     {
-                        Panel p = new Panel(id, j, i);
+                        Panel p = new Panel(j, i);
                         if (arr[i, j] >= 0 && arr[i, j] <= 7)
                         {
                             p.IsRevealed = true;
@@ -108,7 +111,6 @@ namespace ConsoleApp1
                             p.IsFlagged = true;
                         }
                         Panels.Add(p);
-                        id++;
                     }
                 }
                
@@ -116,6 +118,7 @@ namespace ConsoleApp1
             }
 
 
+            //used this method for debugging and testing 
             public void ShowPanels(List<Panel> panels)
             {
                 int t = 1;
@@ -143,6 +146,7 @@ namespace ConsoleApp1
             }
 
 
+            //get all the neighbor panels with a default depth of 1 (the 8 immediate neighbors)
             public List<Panel> GetNeighbors(int x, int y, int depth = 1)
             {
                 var nearbyPanels = Panels.Where(panel => panel.X >= (x - depth) && panel.X <= (x + depth)
@@ -151,7 +155,7 @@ namespace ConsoleApp1
                 return nearbyPanels.Except(currentPanel).ToList();
             }
 
-
+            
             public void RevealPanel(int x, int y)
             {
                 var selectedPanel = Panels.First(panel => panel.X == x && panel.Y == y);
@@ -172,7 +176,7 @@ namespace ConsoleApp1
 
 
 
-        //solver class
+        //class represents the methods for solver
         public class GameSolver
         {
             public GameBoard InputBoard { get; set; }
@@ -180,10 +184,13 @@ namespace ConsoleApp1
 
             public GameSolver(int height, int width, int[,] arr)
             {
+                //to compare between the input and the output panels
+                //we will make changes to the OutputBoard panels and compare it to the Inputboard panels
                 InputBoard = new GameBoard(width, height, arr);
                 OutputBoard = new GameBoard(width, height, arr);
             }
 
+            //flag the panels that are needed to be falgged
             public void FlagObviousMines()
             {
                 var numberPanels = InputBoard.Panels.Where(x => x.IsRevealed && x.AdjacentMines > 0);
@@ -204,7 +211,7 @@ namespace ConsoleApp1
                 }
             }
 
-
+            //reveal the panels that are needed to be revealed
             public void ObviousNumbers()
             {
                 var numberedPanels = InputBoard.Panels.Where(x => x.IsRevealed && x.AdjacentMines > 0);
@@ -228,7 +235,7 @@ namespace ConsoleApp1
                 }
             }
 
-
+            //applay the flag and reveal methods and check if there is no solve 
             public void Solve()
             {
 
@@ -254,6 +261,7 @@ namespace ConsoleApp1
 
             }
 
+            //return a list of the new falgged panels 
             public List<Panel> GetFlags()
             {
                
@@ -268,6 +276,8 @@ namespace ConsoleApp1
                 return result;
             }
 
+
+            //return a list of the new revealed panels
             public List<Panel> GetRevealed()
             {
                 List<Panel> result = new List<Panel>();
