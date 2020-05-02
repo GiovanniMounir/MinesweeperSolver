@@ -81,10 +81,12 @@ namespace MinesweeperSolver
         private void RightClick(uint X, uint Y)
         {
             mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
+            Thread.Sleep(1);
         }
         private void LeftClick(uint X, uint Y)
         {
             mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
+            Thread.Sleep(1);
         }
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
