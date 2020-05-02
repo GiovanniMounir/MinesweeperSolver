@@ -77,6 +77,7 @@ namespace MinesweeperSolver
                 selectY = e.Y;
             }
         }
+        Point lastPos = new Point(0,0);
         private void RightClick(uint X, uint Y)
         {
             mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
@@ -354,9 +355,9 @@ namespace MinesweeperSolver
             {
                 Rectangle rect = cells[cellsIndex[reveal.X + "_" + reveal.Y]];
                 this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Blue)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
-                if (autoMouse.Checked) 
+                if (autoMouse.Checked)
                 {
-                    Cursor.Position = new Point(selectX + rect.X + (rect.Width / 2), selectY + rect.Y + (rect.Height/ 2));
+                    Cursor.Position = new Point(selectX + rect.X + (rect.Width / 2), selectY + rect.Y + (rect.Height / 2));
                     LeftClick((uint)Cursor.Position.X, (uint)Cursor.Position.Y);
                 }
             }
@@ -433,6 +434,7 @@ namespace MinesweeperSolver
             catch { }
             if (worker == null || worker.ThreadState != System.Threading.ThreadState.Running)
             {
+                int _wait = (int)refreshFrequency.Value;
                 worker = new Thread((ThreadStart)delegate
                 {
                     string lastAverage = "";
@@ -446,7 +448,7 @@ namespace MinesweeperSolver
                                 GetMatrix(_rect, _captured, false);
                             }
                         }
-                        Thread.Sleep(1000);
+                        Thread.Sleep(_wait);
                     }
                 });
                 worker.Start();
