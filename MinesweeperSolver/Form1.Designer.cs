@@ -31,6 +31,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
+            this.autoMouse = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // button1
@@ -68,12 +69,28 @@
             this.button3.Visible = false;
             this.button3.Click += new System.EventHandler(this.Button3_Click);
             // 
+            // autoMouse
+            // 
+            this.autoMouse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.autoMouse.BackColor = System.Drawing.Color.Black;
+            this.autoMouse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.autoMouse.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.autoMouse.Location = new System.Drawing.Point(438, 306);
+            this.autoMouse.Name = "autoMouse";
+            this.autoMouse.Size = new System.Drawing.Size(90, 17);
+            this.autoMouse.TabIndex = 5;
+            this.autoMouse.Text = "Auto-mouse";
+            this.autoMouse.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.autoMouse.ThreeState = true;
+            this.autoMouse.UseVisualStyleBackColor = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(540, 364);
+            this.Controls.Add(this.autoMouse);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
@@ -92,6 +109,7 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.CheckBox autoMouse;
     }
 }
 

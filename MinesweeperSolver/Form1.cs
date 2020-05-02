@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace MinesweeperSolver
 {
@@ -16,6 +17,17 @@ namespace MinesweeperSolver
     { 
         Opaque oq;
         Thread worker;
+        /* Import user32.dll to simulate mouse clicks */
+        /* ------------------------------------------ */
+        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+        public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
+
+        private const int MOUSEEVENTF_LEFTDOWN = 0x02;
+        private const int MOUSEEVENTF_LEFTUP = 0x04;
+        private const int MOUSEEVENTF_RIGHTDOWN = 0x08;
+        private const int MOUSEEVENTF_RIGHTUP = 0x10;
+        /* ------------------------------------------ */
+
         public Form1()
         {
             InitializeComponent();
@@ -65,7 +77,14 @@ namespace MinesweeperSolver
                 selectY = e.Y;
             }
         }
-
+        private void RightClick(uint X, uint Y)
+        {
+            mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
+        }
+        private void LeftClick(uint X, uint Y)
+        {
+            mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
+        }
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
             if (start && e.Button == System.Windows.Forms.MouseButtons.Left && e.X - selectX > 0 && e.Y - selectY > 0)
@@ -116,9 +135,9 @@ namespace MinesweeperSolver
             this.Location = new System.Drawing.Point(0, 0);
             this.Size = new Size(bounds.Width, bounds.Height);
         }
-
         private void Form1_Load(object sender, EventArgs e)
         {
+            if (MessageBox.Show("Would you like to enable auto-clicking for detections?", "MinesweeperSolver", MessageBoxButtons.YesNo) == DialogResult.Yes) autoMouse.Checked = true;
             FillScreen();
             numberMap.Add(Color.FromArgb(255, 0, 0, 255), 1);
             numberMap.Add(Color.FromArgb(255, 0, 128, 0), 2);
@@ -335,12 +354,22 @@ namespace MinesweeperSolver
             {
                 Rectangle rect = cells[cellsIndex[reveal.X + "_" + reveal.Y]];
                 this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Blue)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
+                if (autoMouse.Checked) 
+                {
+                    Cursor.Position = new Point(selectX + rect.X + (rect.Width / 2), selectY + rect.Y + (rect.Height/ 2));
+                    LeftClick((uint)Cursor.Position.X, (uint)Cursor.Position.Y);
+                }
             }
 
             foreach (var flag in flags)
             {
                 Rectangle rect = cells[cellsIndex[flag.X + "_" + flag.Y]];
                 this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
+                if (autoMouse.Checked)
+                {
+                    Cursor.Position = new Point(selectX + rect.X + (rect.Width / 2), selectY + rect.Y + (rect.Height / 2));
+                    RightClick((uint)Cursor.Position.X, (uint)Cursor.Position.Y);
+                }
             }
             return Matrix;
 
@@ -396,6 +425,12 @@ namespace MinesweeperSolver
                     /* ---------------------------------------------- */
                 }
             }
+            try
+            {
+                if (worker != null)
+                    worker.Abort();
+            }
+            catch { }
             if (worker == null || worker.ThreadState != System.Threading.ThreadState.Running)
             {
                 worker = new Thread((ThreadStart)delegate
