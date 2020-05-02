@@ -253,7 +253,7 @@ namespace MinesweeperSolver
                 foreach (Color _color in numberMap.Keys)
                 {
                     int pixels = ImageColor(__bitmap, _color, 8);
-                    if (numberMap[_color] != 8 && pixels >= 10 || pixels > 80 )
+                    if (numberMap[_color] != 8 && pixels >= 10 || pixels > 80)
                     {
                         number = numberMap[_color];
                         break;
@@ -266,10 +266,26 @@ namespace MinesweeperSolver
                 else if ((number == 0 || number == 8) && whitePixels >= 25)
                 {
                     number = -2; //UNOPENED
-                }   
-                else if ((number == 7 || number == -1) && whitePixels >= 1 && ImageColor(__bitmap, Color.FromArgb(0,0,0), 10) > 10)
+                }
+                else if ((number == 7 || number == -1) && whitePixels >= 1 && ImageColor(__bitmap, Color.FromArgb(0, 0, 0), 10) > 10)
                 {
                     number = -3; //BOMB
+                    this.CreateGraphics().Clear(Color.White);
+                    if (!oq.IsDisposed)
+                    {
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            oq.Hide();
+                            oq.Dispose();
+                        });
+                    }
+                    this.Invoke((MethodInvoker)delegate {
+                        this.CreateGraphics().Clear(Color.White);
+                        oq = new Opaque("Game lost");
+                        oq.Show();
+                        oq.TopMost = true;
+                    });
+                    return new int[,] { };
                 }
                 if (drawGrid)
                 {
