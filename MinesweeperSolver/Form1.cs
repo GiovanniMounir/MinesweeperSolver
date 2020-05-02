@@ -146,7 +146,7 @@ namespace MinesweeperSolver
             {
                 g.CopyFromScreen(System.Drawing.Point.Empty, System.Drawing.Point.Empty, bounds.Size);
             }
-            if (snipRectangle.Width == 0 || snipRectangle.Height == 0) return null;
+            if (snipRectangle.Width == 0 || snipRectangle.Height == 0) return bitmap;
 
             bitmap = bitmap.Clone(snipRectangle, bitmap.PixelFormat);
             return bitmap;
@@ -366,6 +366,8 @@ namespace MinesweeperSolver
         }
         private void DoLogic(Bitmap _bitmap)
         {
+            //SaveOpenImage(CaptureScreen(new Rectangle(0, 0, 0, 0)), "img.png");
+            //    return ;
             if (_bitmap == null) return;
             List<Rectangle> _rect = new List<Rectangle>();
             using (Image<Bgr, Byte> original = new Image<Bgr, byte>(_bitmap))
