@@ -240,7 +240,7 @@ namespace MinesweeperSolver
             Bitmap __bitmap;
             int[,] Matrix = new int[mrow, mcol];
             Dictionary<string, int> cellsIndex = new Dictionary<string, int>();
-            if (drawGrid) this.CreateGraphics().Clear(Color.White);
+            this.CreateGraphics().Clear(Color.White);
             for (int i = 0; i < cells.Count(); i++)
             {
                 Rectangle rect = cells[i];
@@ -266,6 +266,7 @@ namespace MinesweeperSolver
                 else if ((number == 0 || number == 8) && whitePixels >= 25)
                 {
                     number = -2; //UNOPENED
+                    cellsIndex.Add(col + "_" + row, i);
                 }
                 else if ((number == 7 || number == -1) && whitePixels >= 1 && ImageColor(__bitmap, Color.FromArgb(0, 0, 0), 10) > 10)
                 {
@@ -292,8 +293,6 @@ namespace MinesweeperSolver
                     this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
                     this.CreateGraphics().DrawString(GetChar(number).ToString(), new Font("Arial", 8), new SolidBrush(Color.Navy), selectX + rect.X + 1, selectY + rect.Y);
                 }
-                if (number == -2)
-                cellsIndex.Add(col + "_" + row, i);
                 Matrix[row, col] = number;
                 lastY = rect.Y;
                 col++;
@@ -330,25 +329,18 @@ namespace MinesweeperSolver
             List<Panel> flags = new List<Panel>();
             flags = solver.GetFlags();
 
-
             List<Panel> will_reveal = new List<Panel>();
             will_reveal = solver.GetRevealed();
             foreach (var reveal in will_reveal)
             {
-                if (cellsIndex.ContainsKey(reveal.X + "_" + reveal.Y))
-                {
-                    Rectangle rect = cells[cellsIndex[reveal.X + "_" + reveal.Y]];
-                    this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Blue)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
-                }
+                Rectangle rect = cells[cellsIndex[reveal.X + "_" + reveal.Y]];
+                this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Blue)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
             }
 
             foreach (var flag in flags)
             {
-                if (cellsIndex.ContainsKey(flag.X + "_" + flag.Y))
-                {
-                    Rectangle rect = cells[cellsIndex[flag.X + "_" + flag.Y]];
-                    this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
-                }
+                Rectangle rect = cells[cellsIndex[flag.X + "_" + flag.Y]];
+                this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
             }
             return Matrix;
 
