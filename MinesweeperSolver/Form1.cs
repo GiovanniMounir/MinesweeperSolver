@@ -88,7 +88,7 @@ namespace MinesweeperSolver
         }
         private void HideMessage()
         {
-            if (!oq.IsDisposed)
+            if (oq != null && !oq.IsDisposed)
             {
                 this.Invoke((MethodInvoker)delegate
                 {
