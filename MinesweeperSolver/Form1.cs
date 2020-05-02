@@ -338,7 +338,7 @@ namespace MinesweeperSolver
                 if (cellsIndex.ContainsKey(reveal.X + "_" + reveal.Y))
                 {
                     Rectangle rect = cells[cellsIndex[reveal.X + "_" + reveal.Y]];
-                    this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Green)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
+                    this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Blue)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
                 }
             }
 
