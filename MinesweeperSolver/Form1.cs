@@ -276,6 +276,7 @@ namespace MinesweeperSolver
                     this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
                     this.CreateGraphics().DrawString(GetChar(number).ToString(), new Font("Arial", 8), new SolidBrush(Color.Navy), selectX + rect.X + 1, selectY + rect.Y);
                 }
+                if (number == -2)
                 cellsIndex.Add(col + "_" + row, i);
                 Matrix[row, col] = number;
                 lastY = rect.Y;
@@ -318,14 +319,20 @@ namespace MinesweeperSolver
             will_reveal = solver.GetRevealed();
             foreach (var reveal in will_reveal)
             {
-                Rectangle rect = cells[cellsIndex[reveal.X + "_" + reveal.Y]];
+                if (cellsIndex.ContainsKey(reveal.X + "_" + reveal.Y))
+                {
+                    Rectangle rect = cells[cellsIndex[reveal.X + "_" + reveal.Y]];
                     this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Green)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
+                }
             }
 
             foreach (var flag in flags)
             {
-                Rectangle rect = cells[cellsIndex[flag.X + "_" + flag.Y]];
-                this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
+                if (cellsIndex.ContainsKey(flag.X + "_" + flag.Y))
+                {
+                    Rectangle rect = cells[cellsIndex[flag.X + "_" + flag.Y]];
+                    this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
+                }
             }
             return Matrix;
 
