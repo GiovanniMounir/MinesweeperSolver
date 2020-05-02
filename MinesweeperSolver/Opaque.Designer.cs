@@ -38,7 +38,7 @@
             this.label1.BackColor = System.Drawing.Color.Black;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.SystemColors.ButtonFace;
-            this.label1.Location = new System.Drawing.Point(12, 8);
+            this.label1.Location = new System.Drawing.Point(6, 8);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(484, 24);
             this.label1.TabIndex = 4;
@@ -49,13 +49,14 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(502, 41);
+            this.ClientSize = new System.Drawing.Size(498, 41);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "Opaque";
             this.Text = "Opaque";
             this.TopMost = true;
             this.TransparencyKey = System.Drawing.Color.Transparent;
+            this.Load += new System.EventHandler(this.Opaque_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

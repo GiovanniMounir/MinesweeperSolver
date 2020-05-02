@@ -4,15 +4,10 @@ using Emgu.CV.Util;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.Threading;
 using System.Windows.Forms;
-using System.IO;
-using NumpyDotNet;
-using System.Drawing.Drawing2D;
+using System.Threading;
 
 namespace MinesweeperSolver
 {
@@ -20,24 +15,20 @@ namespace MinesweeperSolver
     public partial class Form1 : Form
     { 
         Opaque oq;
+        Thread worker;
         public Form1()
         {
             InitializeComponent();
         }
-        private Rectangle ScreenBounds()
-        {
-            return Screen.GetBounds(System.Drawing.Point.Empty);
-        }
         void SnipScreen()
         {
             Cursor.Current = System.Windows.Forms.Cursors.Cross;
-            Rectangle bounds = ScreenBounds();
+            
             FillScreen();
             oq = new Opaque();
             oq.Show();
-            oq.Location = new Point(bounds.Width / 2 - (oq.Size.Width / 2), 0);
             this.BackColor = Color.Black;
-            this.Opacity = 0.2;
+            this.Opacity = 0.3;
             button3.Visible = button2.Visible = button1.Visible = false;
             start = true;
         }
@@ -91,10 +82,24 @@ namespace MinesweeperSolver
                 }
             }
         }
+        private Image<Bgr,byte> CaptureScreenImg(Rectangle snipRectangle)
+        {
+            this.Invoke((MethodInvoker)delegate
+            {
+                this.Opacity = 0;
+            });
+            Image<Bgr, byte> _return = new Image<Bgr, byte>(CaptureScreen(snipRectangle));
+            this.Invoke((MethodInvoker)delegate
+            {
+                this.Opacity = 1;
+            });
+            return _return;
+            
+        }
         private Bitmap CaptureScreen(Rectangle snipRectangle)
         {
 
-            Rectangle bounds = ScreenBounds();
+            Rectangle bounds = Helper.ScreenBounds();
             Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height);
             using (Graphics g = Graphics.FromImage(bitmap))
             {
@@ -107,7 +112,7 @@ namespace MinesweeperSolver
         }
         private void FillScreen()
         {
-            Rectangle bounds = ScreenBounds();
+            Rectangle bounds = Helper.ScreenBounds();
             this.Location = new System.Drawing.Point(0, 0);
             this.Size = new Size(bounds.Width, bounds.Height);
         }
@@ -155,27 +160,26 @@ namespace MinesweeperSolver
         {
             image.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
             Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
-            counter++;
+            
         }
         private void SaveOpenImage(Image<Gray, Byte> image, string filename)
         {
             image.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
             Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
-            counter++;
+            
         }
         private void SaveOpenImage(Image<Bgr, float> image, string filename)
         {
             image.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
             Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
-            counter++;
+            
         }
         private void SaveOpenImage(Image<Bgr,Byte> image, string filename)
         {
             image.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\"+filename);
             Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\"+filename);
-            counter++;
+            
         }
-        int counter = 0;
         private Image<Bgr, byte> ToWhite(Image<Bgr, byte> rgbimage, Bgr sourceColor)
         {
             Image<Bgr, byte> ret = rgbimage.Clone();
@@ -235,6 +239,7 @@ namespace MinesweeperSolver
             int col = 0;
             Bitmap __bitmap;
             int[,] Matrix = new int[mrow, mcol];
+            Dictionary<string, int> cellsIndex = new Dictionary<string, int>();
             if (drawGrid) this.CreateGraphics().Clear(Color.White);
             for (int i = 0; i < cells.Count(); i++)
             {
@@ -271,9 +276,56 @@ namespace MinesweeperSolver
                     this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
                     this.CreateGraphics().DrawString(GetChar(number).ToString(), new Font("Arial", 8), new SolidBrush(Color.Navy), selectX + rect.X + 1, selectY + rect.Y);
                 }
+                cellsIndex.Add(col + "_" + row, i);
                 Matrix[row, col] = number;
                 lastY = rect.Y;
                 col++;
+            }
+            GameSolver solver = new GameSolver(Matrix.GetLength(0), Matrix.GetLength(1), Matrix);
+
+            if (!oq.IsDisposed)
+            {
+                this.Invoke((MethodInvoker)delegate
+                {
+                    oq.Hide();
+                    oq.Dispose();
+                });
+            }
+
+            if (!solver.Solve())
+            {
+                this.Invoke((MethodInvoker)delegate {
+                    this.CreateGraphics().Clear(Color.White);
+                    oq = new Opaque("There is no solution");
+                    oq.Show();
+                    oq.TopMost = true;
+                });
+            }
+            else
+            {
+                if (!oq.IsDisposed)
+                    this.Invoke((MethodInvoker)delegate
+                    {
+                        oq.Hide();
+                    });
+            }
+
+            List<Panel> flags = new List<Panel>();
+            flags = solver.GetFlags();
+
+
+            List<Panel> will_reveal = new List<Panel>();
+            will_reveal = solver.GetRevealed();
+            foreach (var reveal in will_reveal)
+            {
+                Rectangle rect = cells[cellsIndex[reveal.X + "_" + reveal.Y]];
+                    this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Green)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
+            }
+
+            foreach (var flag in flags)
+            {
+                Rectangle rect = cells[cellsIndex[flag.X + "_" + flag.Y]];
+                this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
             }
             return Matrix;
 
@@ -281,6 +333,7 @@ namespace MinesweeperSolver
         private void DoLogic(Bitmap _bitmap)
         {
             if (_bitmap == null) return;
+            List<Rectangle> _rect = new List<Rectangle>();
             using (Image<Bgr, Byte> original = new Image<Bgr, byte>(_bitmap))
             {
 
@@ -315,17 +368,39 @@ namespace MinesweeperSolver
 
                     /* Filter rectangles */
                     /* ---------------------------------------------- */
-                    List<Rectangle> _rect = new List<Rectangle>();
                     for (int i = 0; i < contours.Size; i++)
                     {
                         Rectangle rect = CvInvoke.BoundingRectangle(contours[i]);
                         if (rect.Width > 11 && rect.Height > 11 && rect.Height < 20 && rect.Width < 20)
+                        {
+                            //original.Draw(rect, new Bgr(Color.Pink), 2);
                             _rect.Add(rect);
+                        }
                     }
+                    //SaveOpenImage(original.Bitmap, "bitmapimg.png");
                     /* ---------------------------------------------- */
-                    GetMatrix(_rect, original, true);
                 }
             }
+            if (worker == null || worker.ThreadState != System.Threading.ThreadState.Running)
+            {
+                worker = new Thread((ThreadStart)delegate
+                {
+                    string lastAverage = "";
+                    while (true)
+                    {
+                        using (Image<Bgr, byte> _captured = CaptureScreenImg(regionRectangle))
+                        {
+                            if (lastAverage != _captured.GetAverage().ToString())
+                            {
+                                lastAverage = _captured.GetAverage().ToString();
+                                GetMatrix(_rect, _captured, false);
+                            }
+                        }
+                        Thread.Sleep(1000);
+                    }
+                });
+                worker.Start();
+            } 
         }
 
         Dictionary<Color, int> numberMap = new Dictionary<Color, int>();
@@ -363,6 +438,17 @@ namespace MinesweeperSolver
 
         private void Button3_Click(object sender, EventArgs e)
         {
+            try
+            {
+                if (worker != null)
+                worker.Abort();
+            }
+            catch { }
+            if (oq != null && !oq.IsDisposed)
+            {
+                oq.Hide();
+                oq.Dispose();
+            }
             this.CreateGraphics().Clear(Color.White);
         }
     }

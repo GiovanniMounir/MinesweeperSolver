@@ -48,12 +48,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Downloads\A_Basic_Program\My Simple EMGU Program\My Simple EMGU Program\My EMGU Program\bin\Debug\Emgu.Util.dll</HintPath>
     </Reference>
-    <Reference Include="NumpyDotNet, Version=0.9.40.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NumpyDotNet.0.9.42\lib\netstandard2.0\NumpyDotNet.dll</HintPath>
-    </Reference>
-    <Reference Include="NumpyLib, Version=0.9.40.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NumpyDotNet.0.9.42\lib\netstandard2.0\NumpyLib.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
@@ -74,12 +68,16 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="GameLogic\GameBoard.cs" />
+    <Compile Include="GameLogic\GameSolver.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="Opaque.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Opaque.Designer.cs">
       <DependentUpon>Opaque.cs</DependentUpon>
     </Compile>
+    <Compile Include="GameLogic\Panel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
