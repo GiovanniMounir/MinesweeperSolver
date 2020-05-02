@@ -267,7 +267,7 @@ namespace MinesweeperSolver
                 {
                     number = -2; //UNOPENED
                 }   
-                if ((number == 7 || number == -1) && whitePixels >= 1 && ImageColor(__bitmap, Color.FromArgb(0,0,0), 10) > 10)
+                else if ((number == 7 || number == -1) && whitePixels >= 1 && ImageColor(__bitmap, Color.FromArgb(0,0,0), 10) > 10)
                 {
                     number = -3; //BOMB
                 }
