@@ -86,12 +86,12 @@ namespace MinesweeperSolver
         {
             this.Invoke((MethodInvoker)delegate
             {
-                this.Visible = false;
+                this.Opacity = 0;
             });
             Image<Bgr, byte> _return = new Image<Bgr, byte>(CaptureScreen(snipRectangle));
             this.Invoke((MethodInvoker)delegate
             {
-                this.Visible = true;
+                this.Opacity = 1;
             });
             return _return;
             
