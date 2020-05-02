@@ -393,6 +393,10 @@ namespace MinesweeperSolver
                     CvInvoke.Dilate(gray_img, gray_img, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
                     kernel = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(3, 1), new Point(-1, -1));
                     CvInvoke.Erode(gray_img, gray_img, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
+
+                    int ycrop = 45;
+                    gray_img.ROI = new Rectangle(0, ycrop, gray_img.Width, gray_img.Height - ycrop);
+                    gray_img = gray_img.Clone();
                     /* ---------------------------------------------- */
 
                     /* Find contours */
@@ -474,9 +478,29 @@ namespace MinesweeperSolver
             {
                 if (worker != null)
                     worker.Abort();
+                var img = new Image<Bgr, byte>(CaptureScreen(Helper.ScreenBounds()));
+                var filtrdimg = img.InRange(new Bgr(189, 189, 189), new Bgr(205, 205, 205));
+
+                /*python code  */
+                //img_contoured = img.copy()
+                //cnts = cv2.findContours(filtrdimg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+                //cv2.drawContours(img_contoured, cnts, -1, (0,255,0), 3)
+                //show(img_contoured)
+
+                VectorOfVectorOfPoint cnts = new VectorOfVectorOfPoint();
+                CvInvoke.FindContours(filtrdimg, cnts, null, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+                var asdx = CvInvoke.ContourArea(cnts[0]);
+                var biggstcontour = (from u in cnts.ToArrayOfArray()
+                                     orderby CvInvoke.ContourArea(new VectorOfPoint(u)) descending
+                                     select u).FirstOrDefault();
+
+                img.Draw(biggstcontour, new Bgr(0, 255, 0), 3);
+                regionRectangle = CvInvoke.BoundingRectangle(new VectorOfPoint(biggstcontour));
+
+                DoLogic(regionRectangle);
             }
             catch { }
-            Form1_PreviewKeyDown(sender, null);
+            //Form1_PreviewKeyDown(sender, null);
         }
         private void Button2_Click(object sender, EventArgs e)
         {
