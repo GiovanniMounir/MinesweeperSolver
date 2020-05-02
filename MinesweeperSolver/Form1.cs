@@ -37,8 +37,7 @@ namespace MinesweeperSolver
             Cursor.Current = System.Windows.Forms.Cursors.Cross;
             
             FillScreen();
-            oq = new Opaque();
-            oq.Show();
+            ShowMessage("Drag the mouse to select the interactive area of the game");
             this.BackColor = Color.Black;
             this.Opacity = 0.3;
             button3.Visible = button2.Visible = button1.Visible = false;
@@ -54,8 +53,7 @@ namespace MinesweeperSolver
             if (start && e.Button == System.Windows.Forms.MouseButtons.Left)
             {
                 start = false;
-                oq.Hide();
-                oq.Dispose();
+                HideMessage();
                 this.Opacity = 1;
                 this.BackColor = Color.White;
                 button3.Visible = button2.Visible = button1.Visible = true;
@@ -87,6 +85,27 @@ namespace MinesweeperSolver
         {
             mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
             Thread.Sleep(1);
+        }
+        private void HideMessage()
+        {
+            if (!oq.IsDisposed)
+            {
+                this.Invoke((MethodInvoker)delegate
+                {
+                    oq.Hide();
+                    oq.Dispose();
+                });
+            }
+        }
+        private void ShowMessage(string text)
+        {
+            HideMessage();
+            this.Invoke((MethodInvoker)delegate {
+                this.CreateGraphics().Clear(Color.White);
+                oq = new Opaque(text);
+                oq.Show();
+                oq.TopMost = true;
+            });
         }
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
@@ -294,20 +313,7 @@ namespace MinesweeperSolver
                 {
                     number = -3; //BOMB
                     this.CreateGraphics().Clear(Color.White);
-                    if (!oq.IsDisposed)
-                    {
-                        this.Invoke((MethodInvoker)delegate
-                        {
-                            oq.Hide();
-                            oq.Dispose();
-                        });
-                    }
-                    this.Invoke((MethodInvoker)delegate {
-                        this.CreateGraphics().Clear(Color.White);
-                        oq = new Opaque("Game lost");
-                        oq.Show();
-                        oq.TopMost = true;
-                    });
+                    ShowMessage("Game lost");
                     return new int[,] { };
                 }
                 if (drawGrid)
@@ -320,32 +326,13 @@ namespace MinesweeperSolver
                 col++;
             }
             GameSolver solver = new GameSolver(Matrix.GetLength(0), Matrix.GetLength(1), Matrix);
-
-            if (!oq.IsDisposed)
-            {
-                this.Invoke((MethodInvoker)delegate
-                {
-                    oq.Hide();
-                    oq.Dispose();
-                });
-            }
-
             if (!solver.Solve())
             {
-                this.Invoke((MethodInvoker)delegate {
-                    this.CreateGraphics().Clear(Color.White);
-                    oq = new Opaque("There is no solution");
-                    oq.Show();
-                    oq.TopMost = true;
-                });
+                ShowMessage("There is no solution");
             }
             else
             {
-                if (!oq.IsDisposed)
-                    this.Invoke((MethodInvoker)delegate
-                    {
-                        oq.Hide();
-                    });
+                HideMessage();
             }
 
             List<Panel> flags = new List<Panel>();
