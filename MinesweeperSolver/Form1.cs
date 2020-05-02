@@ -86,12 +86,12 @@ namespace MinesweeperSolver
         {
             this.Invoke((MethodInvoker)delegate
             {
-                this.Opacity = 0;
+                this.Visible = false;
             });
             Image<Bgr, byte> _return = new Image<Bgr, byte>(CaptureScreen(snipRectangle));
             this.Invoke((MethodInvoker)delegate
             {
-                this.Opacity = 1;
+                this.Visible = true;
             });
             return _return;
             
@@ -427,6 +427,12 @@ namespace MinesweeperSolver
         }
         private void Button1_Click(object sender, EventArgs e)
         {
+            try
+            {
+                if (worker != null)
+                    worker.Abort();
+            }
+            catch { }
             Form1_PreviewKeyDown(sender, null);
         }
         private void Button2_Click(object sender, EventArgs e)
