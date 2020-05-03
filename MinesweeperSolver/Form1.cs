@@ -44,6 +44,16 @@ namespace MinesweeperSolver
             start = true;
         }
         Rectangle regionRectangle;
+        Point startcords;
+        private void restartgame()
+        {
+            Cursor.Position = new Point(startcords.X, startcords.Y);
+            LeftClick((uint)Cursor.Position.X, (uint)Cursor.Position.Y);
+            int xrandom =selectX + regionRectangle.Width / 2;
+            int yrandom = selectY + regionRectangle.Height / 2;
+            Cursor.Position = new Point(xrandom, yrandom);
+            LeftClick((uint)Cursor.Position.X, (uint)Cursor.Position.Y);
+        }
         private void DoLogic(Rectangle region)
         {
             DoLogic(CaptureScreen(region));
@@ -101,6 +111,7 @@ namespace MinesweeperSolver
         {
             HideMessage();
             this.Invoke((MethodInvoker)delegate {
+
                 this.CreateGraphics().Clear(Color.White);
                 oq = new Opaque(text);
                 oq.Show();
@@ -281,7 +292,7 @@ namespace MinesweeperSolver
             Bitmap __bitmap;
             int[,] Matrix = new int[mrow, mcol];
             Dictionary<string, int> cellsIndex = new Dictionary<string, int>();
-            this.CreateGraphics().Clear(Color.White);
+            if(!autoMouse.Checked)  this.CreateGraphics().Clear(Color.White);
             for (int i = 0; i < cells.Count(); i++)
             {
                 Rectangle rect = cells[i];
@@ -312,11 +323,20 @@ namespace MinesweeperSolver
                 else if ((number == 7 || number == -1) && whitePixels >= 1 && ImageColor(__bitmap, Color.FromArgb(0, 0, 0), 10) > 10)
                 {
                     number = -3; //BOMB
-                    this.CreateGraphics().Clear(Color.White);
-                    ShowMessage("Game lost");
+                    if (autoMouse.Checked)
+                    {
+                        restartgame();
+                    }
+                    else
+                    {
+                        this.CreateGraphics().Clear(Color.White);
+                        ShowMessage("Game lost")
+                    }
+                    ;
+
                     return new int[,] { };
                 }
-                if (drawGrid)
+                if (drawGrid && !autoMouse.Checked)
                 {
                     this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
                     this.CreateGraphics().DrawString(GetChar(number).ToString(), new Font("Arial", 8), new SolidBrush(Color.Navy), selectX + rect.X + 1, selectY + rect.Y);
@@ -328,7 +348,15 @@ namespace MinesweeperSolver
             GameSolver solver = new GameSolver(Matrix.GetLength(0), Matrix.GetLength(1), Matrix);
             if (!solver.Solve())
             {
-                ShowMessage("There is no solution");
+                
+                if (autoMouse.Checked)
+                {
+                    restartgame();
+                }
+                else
+                {
+                    ShowMessage("There is no solution");
+                }
             }
             else
             {
@@ -343,22 +371,30 @@ namespace MinesweeperSolver
             foreach (var reveal in will_reveal)
             {
                 Rectangle rect = cells[cellsIndex[reveal.X + "_" + reveal.Y]];
-                this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Blue)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
                 if (autoMouse.Checked)
                 {
                     Cursor.Position = new Point(selectX + rect.X + (rect.Width / 2), selectY + rect.Y + (rect.Height / 2));
                     LeftClick((uint)Cursor.Position.X, (uint)Cursor.Position.Y);
+                }
+                else
+                {
+                    this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Blue)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
+
                 }
             }
 
             foreach (var flag in flags)
             {
                 Rectangle rect = cells[cellsIndex[flag.X + "_" + flag.Y]];
-                this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
+                
                 if (autoMouse.Checked)
                 {
                     Cursor.Position = new Point(selectX + rect.X + (rect.Width / 2), selectY + rect.Y + (rect.Height / 2));
                     RightClick((uint)Cursor.Position.X, (uint)Cursor.Position.Y);
+                }
+                else
+                {
+                    this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
                 }
             }
             return Matrix;
@@ -500,9 +536,34 @@ namespace MinesweeperSolver
                 selectX = regionRectangle.X;
                 selectY = regionRectangle.Y;
 
+
+                /*************Storing coordinates of the Yellow Smile button**************************/
+                /*Python Code*/
+                //img = cv2.imread('mines3.png')
+                //template = cv2.imread('startsmil1.png')
+                //h,w = (13, 12)
+                //res = cv2.matchTemplate(img, template, cv2.TM_CCORR)
+                //min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+                //top_left = max_loc
+                //bottom_right = (top_left[0] + w, top_left[1] + h)
+                //cv2.rectangle(img, top_left, bottom_right, (0, 0, 255), 2)
+
+                var imgcrpd = new Image<Bgr, byte>(CaptureScreen(regionRectangle));
+
+                var template = new Image<Bgr, Byte>("startsmile.png");
+                var res = imgcrpd.MatchTemplate(template, Emgu.CV.CvEnum.TemplateMatchingType.Ccorr);
+
+                res.MinMax(out double[] min_val, out double[] max_val, out Point[] min_loc, out Point[] max_loc);
+
+                startcords = new Point(selectX + max_loc[0].X + 6, selectY + max_loc[0].Y + 6);             
+                                                           
+                if(autoMouse.Checked ) restartgame();
                 DoLogic(regionRectangle);
             }
-            catch { }
+            catch
+            {
+                MessageBox.Show("Error happened In Capturing , Please adjust the game");
+            }
             //Form1_PreviewKeyDown(sender, null);
         }
         private void Button2_Click(object sender, EventArgs e)
@@ -530,7 +591,7 @@ namespace MinesweeperSolver
 
         private void button4_Click(object sender, EventArgs e)
         {
-            oq.Dispose();
+            if(oq != null) oq.Dispose();
             worker.Abort();
             System.Windows.Forms.Application.Exit();
         }
