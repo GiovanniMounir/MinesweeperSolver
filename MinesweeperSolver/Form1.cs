@@ -527,5 +527,12 @@ namespace MinesweeperSolver
             }
             this.CreateGraphics().Clear(Color.White);
         }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            oq.Dispose();
+            worker.Abort();
+            System.Windows.Forms.Application.Exit();
+        }
     }
 }
