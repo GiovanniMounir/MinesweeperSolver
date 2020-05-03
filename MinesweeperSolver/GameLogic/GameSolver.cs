@@ -40,8 +40,60 @@ namespace MinesweeperSolver
             }
         }
 
-        //reveal the panels that are needed to be revealed
-        public void ObviousNumbers()
+
+
+        public bool HardSolve()
+        {
+            bool returned = false;
+            var numberPanels = InputBoard.Panels.Where(x => x.IsRevealed && x.AdjacentMines > 0);
+            HashSet<KeyValuePair<List<Panel>, int>> groups = new HashSet<KeyValuePair<List<Panel>, int>>();
+
+            foreach (var panel in numberPanels)
+            {
+                //For each revealed number panel on the board, get its neighbors.
+                var neighborPanels = InputBoard.GetNeighbors(panel.X, panel.Y);
+
+                //If the total number of hidden panels == the number of mines revealed by this panel...
+                int minesleft = neighborPanels.Count(x => !x.IsRevealed) - panel.AdjacentMines;
+                if (minesleft > 0)
+                {
+
+                    groups.Add(new KeyValuePair<List<Panel>, int>(neighborPanels.Where(x => !x.IsRevealed).ToList(), minesleft));
+                }
+
+            }
+
+            foreach(var panel in numberPanels)
+            {
+                var neighborPanels = InputBoard.GetNeighbors(panel.X, panel.Y);
+
+                var intrsctmins = (
+                    from u in groups
+                    where !u.Key.Except(neighborPanels).Any()
+                    select u
+                    );
+                //The following part should be deleted and reimplemented
+               foreach (var intrsctmin in intrsctmins)
+                {
+                    if((neighborPanels.Count() - intrsctmin.Key.Count() )== (panel.AdjacentMines-intrsctmin.Value))
+                    {
+                        foreach(var paneltobeflagged in neighborPanels.Except( intrsctmin.Key ))
+                        {
+                            OutputBoard.RevealPanel(paneltobeflagged.X, paneltobeflagged.Y);
+                            returned = true;
+                        }
+                    }
+                }
+
+            }
+            return returned;
+        }
+
+
+
+
+            //reveal the panels that are needed to be revealed
+            public void ObviousNumbers()
         {
             var numberedPanels = InputBoard.Panels.Where(x => x.IsRevealed && x.AdjacentMines > 0);
             foreach (var numberPanel in numberedPanels)
@@ -84,7 +136,10 @@ namespace MinesweeperSolver
             }
             if (change_counter == (OutputBoard.Height * OutputBoard.Width))
             {
-                return false;
+
+                return HardSolve();
+                
+               
             }
             return true;
 
