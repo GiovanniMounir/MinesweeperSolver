@@ -366,8 +366,6 @@ namespace MinesweeperSolver
         }
         private void DoLogic(Bitmap _bitmap)
         {
-            //SaveOpenImage(CaptureScreen(new Rectangle(0, 0, 0, 0)), "img.png");
-            //    return ;
             if (_bitmap == null) return;
             List<Rectangle> _rect = new List<Rectangle>();
             using (Image<Bgr, Byte> original = new Image<Bgr, byte>(_bitmap))
@@ -394,9 +392,10 @@ namespace MinesweeperSolver
                     kernel = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(3, 1), new Point(-1, -1));
                     CvInvoke.Erode(gray_img, gray_img, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
 
-                    int ycrop = 45;
+                    /*int ycrop = 45;
                     gray_img.ROI = new Rectangle(0, ycrop, gray_img.Width, gray_img.Height - ycrop);
-                    gray_img = gray_img.Clone();
+                    gray_img = gray_img.Clone();*/
+
                     /* ---------------------------------------------- */
 
                     /* Find contours */
@@ -478,6 +477,7 @@ namespace MinesweeperSolver
             {
                 if (worker != null)
                     worker.Abort();
+
                 var img = new Image<Bgr, byte>(CaptureScreen(Helper.ScreenBounds()));
                 var filtrdimg = img.InRange(new Bgr(189, 189, 189), new Bgr(205, 205, 205));
 
@@ -495,7 +495,10 @@ namespace MinesweeperSolver
                                      select u).FirstOrDefault();
 
                 img.Draw(biggstcontour, new Bgr(0, 255, 0), 3);
+
                 regionRectangle = CvInvoke.BoundingRectangle(new VectorOfPoint(biggstcontour));
+                selectX = regionRectangle.X;
+                selectY = regionRectangle.Y;
 
                 DoLogic(regionRectangle);
             }
