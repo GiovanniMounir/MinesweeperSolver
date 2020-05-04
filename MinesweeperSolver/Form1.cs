@@ -47,6 +47,12 @@ namespace MinesweeperSolver
         Point startcords;
         private void restartgame()
         {
+
+            //return;
+
+
+
+
             Cursor.Position = new Point(startcords.X, startcords.Y);
             LeftClick((uint)Cursor.Position.X, (uint)Cursor.Position.Y);
             int xrandom =selectX + regionRectangle.Width / 2;
@@ -330,9 +336,9 @@ namespace MinesweeperSolver
                     else
                     {
                         this.CreateGraphics().Clear(Color.White);
-                        ShowMessage("Game lost")
+                        ShowMessage("Game lost");
                     }
-                    ;
+                    
 
                     return new int[,] { };
                 }
@@ -557,7 +563,7 @@ namespace MinesweeperSolver
 
                 startcords = new Point(selectX + max_loc[0].X + 6, selectY + max_loc[0].Y + 6);             
                                                            
-                if(autoMouse.Checked ) restartgame();
+                //if(autoMouse.Checked ) restartgame();
                 DoLogic(regionRectangle);
             }
             catch
