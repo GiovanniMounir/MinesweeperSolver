@@ -45,7 +45,7 @@ namespace MinesweeperSolver
         public bool HardSolve()
         {
             bool returned = false;
-            var numberPanels = InputBoard.Panels.Where(x => x.IsRevealed && x.AdjacentMines > 0);
+            var numberPanels = InputBoard.Panels.Where(x => x.IsRevealed && x.AdjacentMines > 0 );
             HashSet<KeyValuePair<List<Panel>, int>> groups = new HashSet<KeyValuePair<List<Panel>, int>>();
 
             foreach (var panel in numberPanels)
@@ -54,16 +54,16 @@ namespace MinesweeperSolver
                 var neighborPanels = InputBoard.GetNeighbors(panel.X, panel.Y);
 
                 //If the total number of hidden panels == the number of mines revealed by this panel...
-                int minesleft = neighborPanels.Count(x => !x.IsRevealed) - panel.AdjacentMines;
-                if (minesleft > 0)
+                int minesleft =  panel.AdjacentMines - neighborPanels.Count(x => x.IsFlagged);
+                if (panel.AdjacentMines > 0)
                 {
 
-                    groups.Add(new KeyValuePair<List<Panel>, int>(neighborPanels.Where(x => !x.IsRevealed).ToList(), minesleft));
+                    groups.Add(new KeyValuePair<List<Panel>, int>(neighborPanels.Where(x => !x.IsRevealed && !x.IsFlagged).OrderBy(x => x.X).ToList(), minesleft));
                 }
 
             }
 
-            foreach(var panel in numberPanels)
+            /*foreach(var panel in numberPanels)
             {
                 var neighborPanels = InputBoard.GetNeighbors(panel.X, panel.Y);
 
@@ -79,10 +79,91 @@ namespace MinesweeperSolver
                     {
                         foreach(var paneltobeflagged in neighborPanels.Except( intrsctmin.Key ))
                         {
-                            OutputBoard.RevealPanel(paneltobeflagged.X, paneltobeflagged.Y);
+                            OutputBoard.FlagPanel(paneltobeflagged.X, paneltobeflagged.Y);
                             returned = true;
                         }
                     }
+                }
+
+            }*/
+
+
+
+            var grps = groups.ToList();
+
+            for (int i = 0; i < groups.Count(); i++)
+            {
+                for (int j = i+1; j < groups.Count(); j++)
+                {
+                    
+                    var grpintrsct = grps[i].Key.Intersect(grps[j].Key);
+                    if (grpintrsct.Count() == 0) continue;
+                    //if a group has same number of mines and it's subset has also same number of mines then difference list is to be revealed
+                    if (grps[i].Value == grps[j].Value )
+                    {
+                        //if grps[i] is subset of grps[j]
+                        if(grpintrsct.Count() == grps[i].Key.Count() )
+                        {
+                            var grpdiff = grps[j].Key.Except(grps[i].Key);
+
+                            foreach (var toberevealedpanel in grpdiff)
+                            {
+                                OutputBoard.RevealPanel(toberevealedpanel.X, toberevealedpanel.Y);
+                                returned = true;
+                            }
+                        }
+                        else if (grpintrsct.Count() == grps[j].Key.Count() && grps[j].Key.Count() < grps[i].Key.Count())
+                        {
+                            var grpdiff = grps[i].Key.Except(grps[j].Key);
+
+                            foreach (var toberevealedpanel in grpdiff)
+                            {
+                                OutputBoard.RevealPanel(toberevealedpanel.X, toberevealedpanel.Y);
+                                returned = true;
+                            }
+                        }
+
+
+
+
+                    }
+                    else
+                    {
+
+                        if (grpintrsct.Count() == grps[i].Key.Count())
+                        {
+                            if (grps[j].Key.Count() - grps[i].Key.Count() == grps[j].Value - grps[i].Value)
+                            {
+                                var grpdiff = grps[j].Key.Except(grps[i].Key);
+
+                                foreach (var tobeflaggedpanel in grpdiff)
+                                {
+                                    OutputBoard.FlagPanel(tobeflaggedpanel.X, tobeflaggedpanel.Y);
+                                    returned = true;
+                                }
+                            }
+                        }
+                        else if (grpintrsct.Count() == grps[j].Key.Count())
+                        {
+                            if (grps[i].Key.Count() - grps[j].Key.Count() == grps[i].Value - grps[j].Value)
+                            {
+                                var grpdiff = grps[i].Key.Except(grps[j].Key);
+
+                                foreach (var tobeflaggedpanel in grpdiff)
+                                {
+                                    OutputBoard.FlagPanel(tobeflaggedpanel.X, tobeflaggedpanel.Y);
+                                    returned = true;
+                                }
+                            }
+                        }
+
+                    }
+
+
+
+
+
+
                 }
 
             }
@@ -136,7 +217,7 @@ namespace MinesweeperSolver
             }
             if (change_counter == (OutputBoard.Height * OutputBoard.Width))
             {
-
+               // System.Windows.Forms.MessageBox.Show("Hard Solving beginned");
                 return HardSolve();
                 
                
