@@ -10,10 +10,11 @@ namespace MinesweeperSolver
         public int Width { get; set; }
         public int Height { get; set; }
         public List<Panel> Panels { get; set; }
-
+        public bool solvedanything { get; set; }
 
         public GameBoard(int width, int height, int[,] arr)
         {
+            solvedanything = false;
             Width = width;
             Height = height;
             Panels = new List<Panel>();
@@ -84,6 +85,8 @@ namespace MinesweeperSolver
             var selectedPanel = Panels.First(panel => panel.X == x && panel.Y == y);
             selectedPanel.IsRevealed = true;
             selectedPanel.IsFlagged = false; //Revealed panels cannot be flagged
+
+            solvedanything = true;
         }
 
         public void FlagPanel(int x, int y)
@@ -92,7 +95,9 @@ namespace MinesweeperSolver
             if (!panel.IsRevealed)
             {
                 panel.IsFlagged = true;
+                solvedanything = true;
             }
+
         }
 
     }
