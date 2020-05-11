@@ -22,6 +22,9 @@ namespace MinesweeperSolver
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
 
+        [DllImport("user32.dll")]
+        public static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vlc);
+
         private const int MOUSEEVENTF_LEFTDOWN = 0x02;
         private const int MOUSEEVENTF_LEFTUP = 0x04;
         private const int MOUSEEVENTF_RIGHTDOWN = 0x08;
@@ -31,7 +34,50 @@ namespace MinesweeperSolver
         public Form1()
         {
             InitializeComponent();
+            // 3. Register HotKey
+
+            // Set an unique id to your Hotkey, it will be used to
+            // identify which hotkey was pressed in code to execute something
+            int UniqueHotkeyId = 1;
+            // Set the Hotkey triggerer the F1 key 
+            // Expected an integer value for F1
+            int HotKeyCode = (int)Keys.F1;
+            // Register the "F9" hotkey
+            Boolean F9Registered = RegisterHotKey(
+                this.Handle, UniqueHotkeyId, 0x0000, HotKeyCode
+            );
+
+            // 4. Verify if the hotkey was succesfully registered, if not, show message in the console
+            if (F9Registered)
+            {
+                Console.WriteLine("Global Hotkey F9 was succesfully registered");
+            }
+            else
+            {
+                Console.WriteLine("Global Hotkey F9 couldn't be registered !");
+            }
         }
+
+        protected override void WndProc(ref Message m)
+        {
+            // 5. Catch when a HotKey is pressed !
+            if (m.Msg == 0x0312)
+            {
+                int id = m.WParam.ToInt32();
+                // MessageBox.Show(string.Format("Hotkey #{0} pressed", id));
+
+                if (id == 1)
+                {
+                    if (autoMouse.Checked)
+                    {
+                        autoMouse.Checked = false;
+                    }
+                }
+            }
+
+            base.WndProc(ref m);
+        }
+
         void SnipScreen()
         {
             Cursor.Current = System.Windows.Forms.Cursors.Cross;
@@ -613,6 +659,11 @@ namespace MinesweeperSolver
         private void autoMouse_CheckedChanged(object sender, EventArgs e)
         {
             this.CreateGraphics().Clear(Color.White);
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
