@@ -598,7 +598,15 @@ namespace MinesweeperSolver
         private void button4_Click(object sender, EventArgs e)
         {
             if(oq != null) oq.Dispose();
-            worker.Abort();
+            //fix X button crashing 
+            try
+            {
+                worker.Abort();
+            }
+            catch
+            {
+
+            }
             System.Windows.Forms.Application.Exit();
         }
     }
