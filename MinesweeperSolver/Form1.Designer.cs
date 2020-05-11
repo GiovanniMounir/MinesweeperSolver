@@ -35,6 +35,7 @@
             this.refreshFrequency = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.button4 = new System.Windows.Forms.Button();
+            this.autoRestart = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.refreshFrequency)).BeginInit();
             this.SuspendLayout();
             // 
@@ -42,7 +43,7 @@
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.button1.Location = new System.Drawing.Point(609, 405);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(95, 28);
             this.button1.TabIndex = 2;
@@ -54,7 +55,7 @@
             // 
             this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.button2.Location = new System.Drawing.Point(507, 405);
-            this.button2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button2.Margin = new System.Windows.Forms.Padding(4);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(95, 28);
             this.button2.TabIndex = 3;
@@ -67,7 +68,7 @@
             // 
             this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.button3.Location = new System.Drawing.Point(404, 405);
-            this.button3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button3.Margin = new System.Windows.Forms.Padding(4);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(95, 28);
             this.button3.TabIndex = 4;
@@ -83,7 +84,7 @@
             this.autoMouse.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.autoMouse.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.autoMouse.Location = new System.Drawing.Point(584, 377);
-            this.autoMouse.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.autoMouse.Margin = new System.Windows.Forms.Padding(4);
             this.autoMouse.Name = "autoMouse";
             this.autoMouse.Size = new System.Drawing.Size(120, 21);
             this.autoMouse.TabIndex = 5;
@@ -91,6 +92,7 @@
             this.autoMouse.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.autoMouse.ThreeState = true;
             this.autoMouse.UseVisualStyleBackColor = false;
+            this.autoMouse.CheckedChanged += new System.EventHandler(this.autoMouse_CheckedChanged);
             // 
             // refreshFrequency
             // 
@@ -98,7 +100,7 @@
             this.refreshFrequency.BackColor = System.Drawing.Color.Black;
             this.refreshFrequency.ForeColor = System.Drawing.Color.WhiteSmoke;
             this.refreshFrequency.Location = new System.Drawing.Point(416, 373);
-            this.refreshFrequency.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.refreshFrequency.Margin = new System.Windows.Forms.Padding(4);
             this.refreshFrequency.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -122,7 +124,7 @@
             this.label1.Location = new System.Drawing.Point(249, 375);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(161, 17);
+            this.label1.Size = new System.Drawing.Size(151, 16);
             this.label1.TabIndex = 7;
             this.label1.Text = "Refresh Frequency (ms)";
             // 
@@ -139,12 +141,29 @@
             this.button4.UseVisualStyleBackColor = false;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
+            // autoRestart
+            // 
+            this.autoRestart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.autoRestart.BackColor = System.Drawing.Color.Black;
+            this.autoRestart.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.autoRestart.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.autoRestart.Location = new System.Drawing.Point(584, 348);
+            this.autoRestart.Margin = new System.Windows.Forms.Padding(4);
+            this.autoRestart.Name = "autoRestart";
+            this.autoRestart.Size = new System.Drawing.Size(120, 21);
+            this.autoRestart.TabIndex = 9;
+            this.autoRestart.Text = "Auto-restart";
+            this.autoRestart.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.autoRestart.ThreeState = true;
+            this.autoRestart.UseVisualStyleBackColor = false;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(720, 448);
+            this.Controls.Add(this.autoRestart);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.refreshFrequency);
@@ -153,7 +172,7 @@
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
             this.Text = "Minesweeper Solver";
             this.TopMost = true;
@@ -174,6 +193,7 @@
         private System.Windows.Forms.NumericUpDown refreshFrequency;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.CheckBox autoRestart;
     }
 }
 

@@ -329,7 +329,7 @@ namespace MinesweeperSolver
                 else if ((number == 7 || number == -1) && whitePixels >= 1 && ImageColor(__bitmap, Color.FromArgb(0, 0, 0), 10) > 10)
                 {
                     number = -3; //BOMB
-                    if (autoMouse.Checked)
+                    if (autoRestart.Checked)
                     {
                         restartgame();
                     }
@@ -355,7 +355,7 @@ namespace MinesweeperSolver
             if (!solver.Solve())
             {
                 
-                if (autoMouse.Checked)
+                if (autoRestart.Checked)
                 {
                     restartgame();
                 }
@@ -608,6 +608,11 @@ namespace MinesweeperSolver
 
             }
             System.Windows.Forms.Application.Exit();
+        }
+
+        private void autoMouse_CheckedChanged(object sender, EventArgs e)
+        {
+            this.CreateGraphics().Clear(Color.White);
         }
     }
 }
