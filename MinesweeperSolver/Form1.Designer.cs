@@ -36,7 +36,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.button4 = new System.Windows.Forms.Button();
             this.autoRestart = new System.Windows.Forms.CheckBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.refreshFrequency)).BeginInit();
             this.SuspendLayout();
             // 
@@ -125,7 +125,7 @@
             this.label1.Location = new System.Drawing.Point(249, 375);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(151, 16);
+            this.label1.Size = new System.Drawing.Size(161, 17);
             this.label1.TabIndex = 7;
             this.label1.Text = "Refresh Frequency (ms)";
             // 
@@ -158,18 +158,17 @@
             this.autoRestart.ThreeState = true;
             this.autoRestart.UseVisualStyleBackColor = false;
             // 
-            // textBox1
+            // label2
             // 
-            this.textBox1.BackColor = System.Drawing.SystemColors.InactiveCaptionText;
-            this.textBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.ForeColor = System.Drawing.SystemColors.Info;
-            this.textBox1.Location = new System.Drawing.Point(54, 12);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(322, 30);
-            this.textBox1.TabIndex = 10;
-            this.textBox1.Text = "Press F1 to exit auto mouse";
-            this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            this.label2.AutoSize = true;
+            this.label2.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.label2.Cursor = System.Windows.Forms.Cursors.No;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(54, 19);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(283, 26);
+            this.label2.TabIndex = 11;
+            this.label2.Text = "Press F1 to exit auto mouse";
             // 
             // Form1
             // 
@@ -177,7 +176,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(720, 448);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.autoRestart);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.label1);
@@ -193,7 +192,6 @@
             this.TopMost = true;
             this.TransparencyKey = System.Drawing.Color.White;
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.Form1_PreviewKeyDown);
             ((System.ComponentModel.ISupportInitialize)(this.refreshFrequency)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -209,7 +207,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.CheckBox autoRestart;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label2;
     }
 }
 

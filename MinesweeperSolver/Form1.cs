@@ -17,8 +17,15 @@ namespace MinesweeperSolver
     { 
         Opaque oq;
         Thread worker;
-        /* Import user32.dll to simulate mouse clicks */
+
+
+
+         
+        Rectangle regionRectangle; //borders of minesweeper window
+        Point startcords; // coordinates of theyellow start button
+
         /* ------------------------------------------ */
+        /* Import user32.dll to simulate mouse clicks */
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
 
@@ -34,8 +41,7 @@ namespace MinesweeperSolver
         public Form1()
         {
             InitializeComponent();
-            // 3. Register HotKey
-
+            // Register HotKey
             // Set an unique id to your Hotkey, it will be used to
             // identify which hotkey was pressed in code to execute something
             int UniqueHotkeyId = 1;
@@ -47,7 +53,7 @@ namespace MinesweeperSolver
                 this.Handle, UniqueHotkeyId, 0x0000, HotKeyCode
             );
 
-            // 4. Verify if the hotkey was succesfully registered, if not, show message in the console
+            //Verify if the hotkey was succesfully registered, if not, show message in the console
             if (F9Registered)
             {
                 Console.WriteLine("Global Hotkey F9 was succesfully registered");
@@ -60,7 +66,7 @@ namespace MinesweeperSolver
 
         protected override void WndProc(ref Message m)
         {
-            // 5. Catch when a HotKey is pressed !
+            //Catch when a HotKey is pressed !
             if (m.Msg == 0x0312)
             {
                 int id = m.WParam.ToInt32();
@@ -78,27 +84,9 @@ namespace MinesweeperSolver
             base.WndProc(ref m);
         }
 
-        void SnipScreen()
-        {
-            Cursor.Current = System.Windows.Forms.Cursors.Cross;
-            
-            FillScreen();
-            ShowMessage("Drag the mouse to select the interactive area of the game");
-            this.BackColor = Color.Black;
-            this.Opacity = 0.3;
-            button3.Visible = button2.Visible = button1.Visible = false;
-            start = true;
-        }
-        Rectangle regionRectangle;
-        Point startcords;
+        //Press on yellow start button
         private void restartgame()
         {
-
-            //return;
-
-
-
-
             Cursor.Position = new Point(startcords.X, startcords.Y);
             LeftClick((uint)Cursor.Position.X, (uint)Cursor.Position.Y);
             int xrandom =selectX + regionRectangle.Width / 2;
@@ -110,34 +98,13 @@ namespace MinesweeperSolver
         {
             DoLogic(CaptureScreen(region));
         }
-        private void Form1_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (start && e.Button == System.Windows.Forms.MouseButtons.Left)
-            {
-                start = false;
-                HideMessage();
-                this.Opacity = 1;
-                this.BackColor = Color.White;
-                button3.Visible = button2.Visible = button1.Visible = true;
-                System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.Default;
-                DoLogic(regionRectangle);
-            }
-        }
-
+        
         int selectX;
         int selectY;
         bool start = false;
 
-        private void Form1_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (start && e.Button == System.Windows.Forms.MouseButtons.Left)
-            {
-                Cursor.Current = System.Windows.Forms.Cursors.Cross;
-                selectX = e.X;
-                selectY = e.Y;
-            }
-        }
-        Point lastPos = new Point(0,0);
+        
+        
         private void RightClick(uint X, uint Y)
         {
             mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
@@ -148,6 +115,8 @@ namespace MinesweeperSolver
             mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
             Thread.Sleep(1);
         }
+
+        //hide shown message to user 
         private void HideMessage()
         {
             if (oq != null && !oq.IsDisposed)
@@ -159,6 +128,8 @@ namespace MinesweeperSolver
                 });
             }
         }
+
+        //Show message to user 
         private void ShowMessage(string text)
         {
             HideMessage();
@@ -170,36 +141,11 @@ namespace MinesweeperSolver
                 oq.TopMost = true;
             });
         }
-        private void Form1_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (start && e.Button == System.Windows.Forms.MouseButtons.Left && e.X - selectX > 0 && e.Y - selectY > 0)
-            {
-                Cursor.Current = System.Windows.Forms.Cursors.Cross;
-                using (System.Drawing.SolidBrush brush = new System.Drawing.SolidBrush(System.Drawing.Color.White))
-                {
-                    using (Graphics g = this.CreateGraphics())
-                    {
-                        g.Clear(Color.Black);
-                        regionRectangle = new Rectangle(selectX, selectY, e.X - selectX, e.Y - selectY);
-                        g.FillRectangle(brush, regionRectangle);
-                    }
-                }
-            }
-        }
-        private Image<Bgr,byte> CaptureScreenImg(Rectangle snipRectangle)
-        {
-            this.Invoke((MethodInvoker)delegate
-            {
-                this.Opacity = 0;
-            });
-            Image<Bgr, byte> _return = new Image<Bgr, byte>(CaptureScreen(snipRectangle));
-            this.Invoke((MethodInvoker)delegate
-            {
-                this.Opacity = 1;
-            });
-            return _return;
-            
-        }
+
+        
+        
+
+        //Take screenshot of the screen
         private Bitmap CaptureScreen(Rectangle snipRectangle)
         {
 
@@ -214,6 +160,24 @@ namespace MinesweeperSolver
             bitmap = bitmap.Clone(snipRectangle, bitmap.PixelFormat);
             return bitmap;
         }
+
+        
+        private Image<Bgr, byte> CaptureScreenImg(Rectangle snipRectangle)
+        {
+            this.Invoke((MethodInvoker)delegate
+            {
+                this.Opacity = 0;
+            });
+            Image<Bgr, byte> _return = new Image<Bgr, byte>(CaptureScreen(snipRectangle));
+            this.Invoke((MethodInvoker)delegate
+            {
+                this.Opacity = 1;
+            });
+            return _return;
+
+        }
+
+        //Make application's overlay fit to screen
         private void FillScreen()
         {
             Rectangle bounds = Helper.ScreenBounds();
@@ -232,11 +196,11 @@ namespace MinesweeperSolver
             numberMap.Add(Color.FromArgb(255, 0, 128, 129), 6);
             numberMap.Add(Color.FromArgb(255, 0, 0, 0), 7);
             numberMap.Add(Color.FromArgb(255, 123,123,123), 8);
-            this.MouseDown += Form1_MouseDown;
-            this.MouseUp += Form1_MouseUp;
-            this.MouseMove += Form1_MouseMove;
-            //Form1_PreviewKeyDown(null, null);
+            
+           
         }
+
+        //Translate cells code to characters
         private char GetChar(int number)
         {
             switch (number)
@@ -250,40 +214,7 @@ namespace MinesweeperSolver
                     return number.ToString()[0];
             }
         }
-        /*bool HasParent(Rectangle rect, List<Rectangle> rectangles)
-        {
-            foreach (Rectangle rectangle in rectangles)
-            {
-                if ((rect.X >= rectangle.X && rect.X <= rectangle.X + rectangle.Width) && (rect.Y >= rectangle.Y && rect.Y <= rectangle.Y + rectangle.Height))
-                    return true;
-            }
-            return false;
-        }*/
-
-        private void SaveOpenImage(Bitmap image, string filename)
-        {
-            image.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
-            Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
-            
-        }
-        private void SaveOpenImage(Image<Gray, Byte> image, string filename)
-        {
-            image.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
-            Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
-            
-        }
-        private void SaveOpenImage(Image<Bgr, float> image, string filename)
-        {
-            image.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
-            Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + filename);
-            
-        }
-        private void SaveOpenImage(Image<Bgr,Byte> image, string filename)
-        {
-            image.Save(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\"+filename);
-            Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\"+filename);
-            
-        }
+      
         private Image<Bgr, byte> ToWhite(Image<Bgr, byte> rgbimage, Bgr sourceColor)
         {
             Image<Bgr, byte> ret = rgbimage.Clone();
@@ -452,6 +383,9 @@ namespace MinesweeperSolver
             return Matrix;
 
         }
+
+
+        //This function takes an image of the window of the game and extracts cells from it
         private void DoLogic(Bitmap _bitmap)
         {
             if (_bitmap == null) return;
@@ -480,9 +414,7 @@ namespace MinesweeperSolver
                     kernel = CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new Size(3, 1), new Point(-1, -1));
                     CvInvoke.Erode(gray_img, gray_img, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Default, new MCvScalar());
 
-                    /*int ycrop = 45;
-                    gray_img.ROI = new Rectangle(0, ycrop, gray_img.Width, gray_img.Height - ycrop);
-                    gray_img = gray_img.Clone();*/
+                    
 
                     /* ---------------------------------------------- */
 
@@ -500,11 +432,11 @@ namespace MinesweeperSolver
                         Rectangle rect = CvInvoke.BoundingRectangle(contours[i]);
                         if (rect.Width > 11 && rect.Height > 11 && rect.Height < 20 && rect.Width < 20)
                         {
-                            //original.Draw(rect, new Bgr(Color.Pink), 2);
+                            
                             _rect.Add(rect);
                         }
                     }
-                    //SaveOpenImage(original.Bitmap, "bitmapimg.png");
+                    
                     /* ---------------------------------------------- */
                 }
             }
@@ -538,13 +470,7 @@ namespace MinesweeperSolver
         }
 
         Dictionary<Color, int> numberMap = new Dictionary<Color, int>();
-        private void Form1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
-            if (e == null || e.Control && e.KeyCode == Keys.T)
-            {
-                SnipScreen();
-            }
-        }
+        
         int ImageColor(Bitmap image, Color _color, int thres = 10)
         {
             Color temp;
@@ -559,6 +485,7 @@ namespace MinesweeperSolver
             }
             return count;
         }
+        //OnClick of Capture Button
         private void Button1_Click(object sender, EventArgs e)
         {
             try
@@ -609,14 +536,14 @@ namespace MinesweeperSolver
 
                 startcords = new Point(selectX + max_loc[0].X + 6, selectY + max_loc[0].Y + 6);             
                                                            
-                //if(autoMouse.Checked ) restartgame();
+                
                 DoLogic(regionRectangle);
             }
             catch
             {
                 MessageBox.Show("Error happened In Capturing , Please adjust the game");
             }
-            //Form1_PreviewKeyDown(sender, null);
+            
         }
         private void Button2_Click(object sender, EventArgs e)
         {
@@ -625,6 +552,7 @@ namespace MinesweeperSolver
                 DoLogic(regionRectangle);
         }
 
+        //OnClick Clear Button abort thread and clear any 
         private void Button3_Click(object sender, EventArgs e)
         {
             try
@@ -641,10 +569,10 @@ namespace MinesweeperSolver
             this.CreateGraphics().Clear(Color.White);
         }
 
+        //OnClick x button , abort thread and exit application
         private void button4_Click(object sender, EventArgs e)
         {
             if(oq != null) oq.Dispose();
-            //fix X button crashing 
             try
             {
                 worker.Abort();
@@ -661,9 +589,7 @@ namespace MinesweeperSolver
             this.CreateGraphics().Clear(Color.White);
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
+      
+      
     }
 }
