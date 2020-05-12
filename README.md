@@ -37,7 +37,7 @@ You can view recordings for this software in the "Demos" folder.
 
 ## Limitations
 1. The program will not work correctly when the DPI/scaling factor is not 1 (i.e 100%). Make sure that scale is set to 100% in the display settings on Microsoft Windows. An error message is shown otherwise.
-2. Cells marked unknown "?" are not properly interpreted by the algorithm. Avoid marking cells as unknown "?" to for best accuracy.
+2. Cells marked unknown "?" are not properly interpreted by the algorithm. Avoid marking cells as unknown "?" for best accuracy.
 3. For best performance, the software only detects the window position of the game after clicking "Capture". Moving the game window after clicking "Capture" will capture the old position: clicking "Capture" again is necessary after moving the game window for best results.
 4. Click on "Capture" after changing the settings to ensure that your settings were saved.
 5. Only works with the classic Minesweeper design, such as [WinmineXP](http://www.minesweeper.info/downloads/WinmineXP.html) or [http://minesweeperonline.com/](http://minesweeperonline.com/)
