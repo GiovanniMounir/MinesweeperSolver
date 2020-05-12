@@ -79,6 +79,11 @@
             0,
             0,
             0});
+            this.refreshFrequency.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
             this.refreshFrequency.Name = "refreshFrequency";
             this.refreshFrequency.Size = new System.Drawing.Size(120, 20);
             this.refreshFrequency.TabIndex = 6;
