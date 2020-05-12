@@ -77,6 +77,7 @@ namespace MinesweeperSolver
 
                 if (id == 1)
                 {
+                    autoRestart.Checked = false;
                     autoMouse.Checked = false;
                 }
             }
@@ -508,7 +509,6 @@ namespace MinesweeperSolver
             {
                 MessageBox.Show("The game window was not found. This programs only supports the Windows XP Minesweeper application or http://minesweeperonline.com/");
             }
-            
         }
 
         //OnClick x button , abort thread and exit application
