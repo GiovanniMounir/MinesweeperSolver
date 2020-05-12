@@ -11,6 +11,7 @@ This work is available under the MIT license.
 ## Dependencies
 
 1. [Emgu CV library](http://www.emgu.com/wiki/index.php/Main_Page) version 3.4.1.
+2. [.NET Framework 4.6.1](https://dotnet.microsoft.com/download/dotnet-framework/net461). 
 
 ## Features
 1. Overlays on Minesweeper cells to indicate presence of bombs or safe cells:
