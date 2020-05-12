@@ -29,7 +29,7 @@ This work is available under the MIT license.
   
 ## Download
 
-To download the executables, please click [here](https://github.com/GiovanniMounir/MinesweeperSolver/releases/download/1.0/MinesweeperSolver_x86_64.zip) to download the latest release and run "MinesweeperSolver.exe" directly.
+To download the executables, please click [here](https://github.com/GiovanniMounir/MinesweeperSolver/releases/download/1.0/MinesweeperSolver_x64.zip) to download the latest release and run "MinesweeperSolver.exe" directly.
 
 ## Demos
 
