@@ -17,17 +17,17 @@ namespace MinesweeperSolver
     { 
         Opaque oq;
         Thread worker;
-
-
-
-         
         Rectangle regionRectangle; //borders of minesweeper window
         Point startcords; // coordinates of theyellow start button
-
+        int selectX;
+        int selectY;
+        List<Rectangle> blue_overlays = new List<Rectangle>();
+        List<Rectangle> red_overlays = new List<Rectangle>();
+        Dictionary<Color, int> numberMap = new Dictionary<Color, int>();
         /* ------------------------------------------ */
         /* Import user32.dll to simulate mouse clicks */
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-        public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
+        public static extern void MouseEvent(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
 
         [DllImport("user32.dll")]
         public static extern bool RegisterHotKey(IntPtr hWnd, int id, int fsModifiers, int vlc);
@@ -49,18 +49,14 @@ namespace MinesweeperSolver
             // Expected an integer value for F1
             int HotKeyCode = (int)Keys.F1;
             // Register the "F9" hotkey
-            Boolean F9Registered = RegisterHotKey(
+            Boolean F1Registered = RegisterHotKey(
                 this.Handle, UniqueHotkeyId, 0x0000, HotKeyCode
             );
 
             //Verify if the hotkey was succesfully registered, if not, show message in the console
-            if (F9Registered)
+            if (!F1Registered)
             {
-                Console.WriteLine("Global Hotkey F9 was succesfully registered");
-            }
-            else
-            {
-                Console.WriteLine("Global Hotkey F9 couldn't be registered !");
+                MessageBox.Show("There has been an error trying to register the F1 hotkey to exit auto-mouse mode. Please make sure that high frequency values are used in order to exit auto-mouse easier.");
             }
         }
 
@@ -74,10 +70,7 @@ namespace MinesweeperSolver
 
                 if (id == 1)
                 {
-                    if (autoMouse.Checked)
-                    {
-                        autoMouse.Checked = false;
-                    }
+                    autoMouse.Checked = false;
                 }
             }
 
@@ -85,7 +78,7 @@ namespace MinesweeperSolver
         }
 
         //Press on yellow start button
-        private void restartgame()
+        private void RestartGame()
         {
             Cursor.Position = new Point(startcords.X, startcords.Y);
             LeftClick((uint)Cursor.Position.X, (uint)Cursor.Position.Y);
@@ -98,21 +91,14 @@ namespace MinesweeperSolver
         {
             DoLogic(CaptureScreen(region));
         }
-        
-        int selectX;
-        int selectY;
-        bool start = false;
-
-        
-        
         private void RightClick(uint X, uint Y)
         {
-            mouse_event(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
+            MouseEvent(MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
             Thread.Sleep(1);
         }
         private void LeftClick(uint X, uint Y)
         {
-            mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
+            MouseEvent(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
             Thread.Sleep(1);
         }
 
@@ -128,14 +114,16 @@ namespace MinesweeperSolver
                 });
             }
         }
-
+        private void ClearGraphics()
+        {
+            this.CreateGraphics().Clear(Color.White);
+        }
         //Show message to user 
         private void ShowMessage(string text)
         {
             HideMessage();
             this.Invoke((MethodInvoker)delegate {
-
-                this.CreateGraphics().Clear(Color.White);
+                //ClearGraphics();
                 oq = new Opaque(text);
                 oq.Show();
                 oq.TopMost = true;
@@ -150,33 +138,30 @@ namespace MinesweeperSolver
         {
 
             Rectangle bounds = Helper.ScreenBounds();
-            Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height);
+            Bitmap bitmap;
+            if (snipRectangle.Width == 0 || snipRectangle.Height == 0)
+                bitmap = new Bitmap(bounds.Width, bounds.Height);
+            else
+                bitmap = new Bitmap(snipRectangle.Width, snipRectangle.Height);
             using (Graphics g = Graphics.FromImage(bitmap))
             {
-                g.CopyFromScreen(System.Drawing.Point.Empty, System.Drawing.Point.Empty, bounds.Size);
+                ClearGraphics();
+                if (snipRectangle.Width == 0 || snipRectangle.Height == 0)
+                    g.CopyFromScreen(System.Drawing.Point.Empty, System.Drawing.Point.Empty, bounds.Size);
+                else
+                    g.CopyFromScreen(snipRectangle.Left, snipRectangle.Top, 0, 0, bitmap.Size, CopyPixelOperation.SourceCopy);
+                DrawOverlays();
             }
-            if (snipRectangle.Width == 0 || snipRectangle.Height == 0) return bitmap;
-
-            bitmap = bitmap.Clone(snipRectangle, bitmap.PixelFormat);
             return bitmap;
         }
 
         
         private Image<Bgr, byte> CaptureScreenImg(Rectangle snipRectangle)
         {
-            this.Invoke((MethodInvoker)delegate
-            {
-                this.Opacity = 0;
-            });
             Image<Bgr, byte> _return = new Image<Bgr, byte>(CaptureScreen(snipRectangle));
-            this.Invoke((MethodInvoker)delegate
-            {
-                this.Opacity = 1;
-            });
             return _return;
 
         }
-
         //Make application's overlay fit to screen
         private void FillScreen()
         {
@@ -186,6 +171,7 @@ namespace MinesweeperSolver
         }
         private void Form1_Load(object sender, EventArgs e)
         {
+            ShowMessage("Open the game and click on Capture to start. Click on Capture again if you move the game window.");
             if (MessageBox.Show("Would you like to enable auto-clicking for detections?", "MinesweeperSolver", MessageBoxButtons.YesNo) == DialogResult.Yes) autoMouse.Checked = true;
             FillScreen();
             numberMap.Add(Color.FromArgb(255, 0, 0, 255), 1);
@@ -213,16 +199,6 @@ namespace MinesweeperSolver
                 default:
                     return number.ToString()[0];
             }
-        }
-      
-        private Image<Bgr, byte> ToWhite(Image<Bgr, byte> rgbimage, Bgr sourceColor)
-        {
-            Image<Bgr, byte> ret = rgbimage.Clone();
-            var image = ret.InRange(sourceColor, sourceColor);
-            var mat = ret.Mat;
-            mat.SetTo(new MCvScalar(255,255,255), image);
-            mat.CopyTo(ret);
-            return ret;
         }
         private Image<Bgr, byte> ToPink(Image<Bgr, byte> rgbimage, Bgr sourceColor)
         {
@@ -264,18 +240,34 @@ namespace MinesweeperSolver
             if (col > 0) row++;
             return rectangles.OrderBy(x => x.X).OrderBy(x => x.Y).ToList();
         }
+        private void ClearOverlays()
+        {
+            blue_overlays.Clear();
+            red_overlays.Clear();
+        }
+        private void DrawOverlays()
+        {
+            ClearGraphics();
+            foreach (Rectangle rect in red_overlays)
+            {
+                this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), rect);
+            }
+            foreach (Rectangle rect in blue_overlays)
+            {
+                this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Blue)), rect);
+            }
+        }
         private int[,] GetMatrix(List<Rectangle> cells, Image<Bgr, Byte> original, bool drawGrid = false)
         {
-            int mrow, mcol;
-            cells = ApproximateRectangles(cells, out mrow, out mcol);
+            cells = ApproximateRectangles(cells, out int mrow, out int mcol);
             int lastY = -1;
-            int number = 0;
+            int number;
             int row = 0;
             int col = 0;
             Bitmap __bitmap;
             int[,] Matrix = new int[mrow, mcol];
             Dictionary<string, int> cellsIndex = new Dictionary<string, int>();
-            if(!autoMouse.Checked)  this.CreateGraphics().Clear(Color.White);
+            //if(!autoMouse.Checked)  this.CreateGraphics().Clear(Color.White);
             for (int i = 0; i < cells.Count(); i++)
             {
                 Rectangle rect = cells[i];
@@ -303,20 +295,17 @@ namespace MinesweeperSolver
                     number = -2; //UNOPENED
                     cellsIndex.Add(col + "_" + row, i);
                 }
-                else if ((number == 7 || number == -1) && whitePixels >= 1 && ImageColor(__bitmap, Color.FromArgb(0, 0, 0), 10) > 10)
+                if ((number == 7 || number == -1) && whitePixels >= 1 && ImageColor(__bitmap, Color.FromArgb(0, 0, 0), 10) > 25 && ImageColor(__bitmap, Color.FromArgb(255, 0, 0), 10) > 10)
                 {
-                    number = -3; //BOMB
                     if (autoRestart.Checked)
                     {
-                        restartgame();
+                        RestartGame();
                     }
                     else
                     {
-                        this.CreateGraphics().Clear(Color.White);
+                        ClearGraphics();
                         ShowMessage("Game lost");
                     }
-                    
-
                     return new int[,] { };
                 }
                 if (drawGrid && !autoMouse.Checked)
@@ -334,7 +323,7 @@ namespace MinesweeperSolver
                 
                 if (autoRestart.Checked)
                 {
-                    restartgame();
+                    RestartGame();
                 }
                 else
                 {
@@ -345,13 +334,8 @@ namespace MinesweeperSolver
             {
                 HideMessage();
             }
-
-            List<Panel> flags = new List<Panel>();
-            flags = solver.GetFlags();
-
-            List<Panel> will_reveal = new List<Panel>();
-            will_reveal = solver.GetRevealed();
-            foreach (var reveal in will_reveal)
+            ClearOverlays();
+            foreach (var reveal in solver.GetRevealed())
             {
                 Rectangle rect = cells[cellsIndex[reveal.X + "_" + reveal.Y]];
                 if (autoMouse.Checked)
@@ -361,12 +345,12 @@ namespace MinesweeperSolver
                 }
                 else
                 {
-                    this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Blue)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
+                    blue_overlays.Add(new Rectangle(selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height));
 
                 }
             }
 
-            foreach (var flag in flags)
+            foreach (var flag in solver.GetFlags())
             {
                 Rectangle rect = cells[cellsIndex[flag.X + "_" + flag.Y]];
                 
@@ -377,9 +361,10 @@ namespace MinesweeperSolver
                 }
                 else
                 {
-                    this.CreateGraphics().DrawRectangle(new Pen(new SolidBrush(Color.Red)), selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height);
+                    red_overlays.Add(new Rectangle(selectX + rect.X, selectY + rect.Y, rect.Width, rect.Height));
                 }
             }
+            DrawOverlays();
             return Matrix;
 
         }
@@ -469,7 +454,6 @@ namespace MinesweeperSolver
             } 
         }
 
-        Dictionary<Color, int> numberMap = new Dictionary<Color, int>();
         
         int ImageColor(Bitmap image, Color _color, int thres = 10)
         {
@@ -493,55 +477,41 @@ namespace MinesweeperSolver
                 if (worker != null)
                     worker.Abort();
 
-                var img = new Image<Bgr, byte>(CaptureScreen(Helper.ScreenBounds()));
-                var filtrdimg = img.InRange(new Bgr(189, 189, 189), new Bgr(205, 205, 205));
+                using (var img = new Image<Bgr, byte>(CaptureScreen(Helper.ScreenBounds())))
+                {
+                    var filtrdimg = img.InRange(new Bgr(189, 189, 189), new Bgr(205, 205, 205));
 
-                /*python code  */
-                //img_contoured = img.copy()
-                //cnts = cv2.findContours(filtrdimg, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-                //cv2.drawContours(img_contoured, cnts, -1, (0,255,0), 3)
-                //show(img_contoured)
+                    VectorOfVectorOfPoint cnts = new VectorOfVectorOfPoint();
+                    CvInvoke.FindContours(filtrdimg, cnts, null, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
+                    var asdx = CvInvoke.ContourArea(cnts[0]);
+                    var biggstcontour = (from u in cnts.ToArrayOfArray()
+                                         orderby CvInvoke.ContourArea(new VectorOfPoint(u)) descending
+                                         select u).FirstOrDefault();
 
-                VectorOfVectorOfPoint cnts = new VectorOfVectorOfPoint();
-                CvInvoke.FindContours(filtrdimg, cnts, null, Emgu.CV.CvEnum.RetrType.External, Emgu.CV.CvEnum.ChainApproxMethod.ChainApproxSimple);
-                var asdx = CvInvoke.ContourArea(cnts[0]);
-                var biggstcontour = (from u in cnts.ToArrayOfArray()
-                                     orderby CvInvoke.ContourArea(new VectorOfPoint(u)) descending
-                                     select u).FirstOrDefault();
+                    img.Draw(biggstcontour, new Bgr(0, 255, 0), 3);
 
-                img.Draw(biggstcontour, new Bgr(0, 255, 0), 3);
+                    regionRectangle = CvInvoke.BoundingRectangle(new VectorOfPoint(biggstcontour));
+                    selectX = regionRectangle.X;
+                    selectY = regionRectangle.Y;
 
-                regionRectangle = CvInvoke.BoundingRectangle(new VectorOfPoint(biggstcontour));
-                selectX = regionRectangle.X;
-                selectY = regionRectangle.Y;
+                    using (var imgcrpd = new Image<Bgr, byte>(CaptureScreen(regionRectangle)))
+                    {
 
+                        using (var template = new Image<Bgr, Byte>("startsmile.png"))
+                        {
+                            var res = imgcrpd.MatchTemplate(template, Emgu.CV.CvEnum.TemplateMatchingType.Ccorr);
+                            res.MinMax(out double[] min_val, out double[] max_val, out Point[] min_loc, out Point[] max_loc);
 
-                /*************Storing coordinates of the Yellow Smile button**************************/
-                /*Python Code*/
-                //img = cv2.imread('mines3.png')
-                //template = cv2.imread('startsmil1.png')
-                //h,w = (13, 12)
-                //res = cv2.matchTemplate(img, template, cv2.TM_CCORR)
-                //min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-                //top_left = max_loc
-                //bottom_right = (top_left[0] + w, top_left[1] + h)
-                //cv2.rectangle(img, top_left, bottom_right, (0, 0, 255), 2)
+                            startcords = new Point(selectX + max_loc[0].X + 7, selectY + max_loc[0].Y + 7);
 
-                var imgcrpd = new Image<Bgr, byte>(CaptureScreen(regionRectangle));
-
-                var template = new Image<Bgr, Byte>("startsmile.png");
-                var res = imgcrpd.MatchTemplate(template, Emgu.CV.CvEnum.TemplateMatchingType.Ccorr);
-
-                res.MinMax(out double[] min_val, out double[] max_val, out Point[] min_loc, out Point[] max_loc);
-
-                startcords = new Point(selectX + max_loc[0].X + 6, selectY + max_loc[0].Y + 6);             
-                                                           
-                
-                DoLogic(regionRectangle);
+                            DoLogic(regionRectangle);
+                        }
+                    }
+                }
             }
             catch
             {
-                MessageBox.Show("Error happened In Capturing , Please adjust the game");
+                MessageBox.Show("The game window was not found. This programs only supports the Windows XP Minesweeper application or http://minesweeperonline.com/");
             }
             
         }
@@ -552,25 +522,8 @@ namespace MinesweeperSolver
                 DoLogic(regionRectangle);
         }
 
-        //OnClick Clear Button abort thread and clear any 
-        private void Button3_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (worker != null)
-                worker.Abort();
-            }
-            catch { }
-            if (oq != null && !oq.IsDisposed)
-            {
-                oq.Hide();
-                oq.Dispose();
-            }
-            this.CreateGraphics().Clear(Color.White);
-        }
-
         //OnClick x button , abort thread and exit application
-        private void button4_Click(object sender, EventArgs e)
+        private void Button4_Click(object sender, EventArgs e)
         {
             if(oq != null) oq.Dispose();
             try
@@ -584,12 +537,40 @@ namespace MinesweeperSolver
             System.Windows.Forms.Application.Exit();
         }
 
-        private void autoMouse_CheckedChanged(object sender, EventArgs e)
+        private void AutoMouse_CheckedChanged(object sender, EventArgs e)
         {
             this.CreateGraphics().Clear(Color.White);
         }
 
-      
-      
+        private void RestoreLabel2(object sender, EventArgs e)
+        {
+            label2.Text = "Press F1 to exit auto mouse";
+        }
+
+        private void AutoRestart_MouseHover(object sender, EventArgs e)
+        {
+            label2.Text = "The game will auto-restart when lost or when no 100% solution";
+        }
+
+        private void AutoMouse_MouseHover(object sender, EventArgs e)
+        {
+            label2.Text = "Automatically flag mines and open cells";
+        }
+
+        private void RefreshFrequency_Enter(object sender, EventArgs e)
+        {
+            label2.Text = "Indicates how often in milliseconds the program checks the screen";
+
+        }
+        private void Button1_MouseHover(object sender, EventArgs e)
+        {
+            label2.Text = "Capture the game window and check for updates";
+        }
+
+        private void Button4_MouseHover(object sender, EventArgs e)
+        {
+            label2.Text = "Close the application";
+
+        }
     }
 }
